@@ -210,10 +210,10 @@ export const YouTubeAudioPlayer: React.FC<YouTubeAudioPlayerProps> = ({
               </div>
 
               <div className="overflow-hidden">
-                <h4 className="font-bold text-xs sm:text-sm text-white truncate hover:text-cyan-300 transition-colors">
+                <h4 className="font-bold text-xs sm:text-sm text-white break-words hover:text-cyan-300 transition-colors">
                   {currentTrack.title}
                 </h4>
-                <p className="font-mono text-[11px] text-slate-400 truncate">
+                <p className="font-mono text-[11px] text-slate-400 break-words">
                   {currentTrack.artist}
                 </p>
               </div>
@@ -327,8 +327,8 @@ export const YouTubeAudioPlayer: React.FC<YouTubeAudioPlayerProps> = ({
                 >
                   <div className="flex items-center space-x-3 overflow-hidden">
                     <img src={tr.coverUrl} alt={tr.title} className="w-10 h-10 rounded-xl object-cover" />
-                    <div className="truncate">
-                      <p className="text-xs truncate">{tr.title}</p>
+                    <div className="break-words">
+                      <p className="text-xs break-words">{tr.title}</p>
                       <p className="text-[10px] text-slate-400 font-mono">{tr.artist}</p>
                     </div>
                   </div>

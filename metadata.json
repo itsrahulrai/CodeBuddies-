@@ -1,6 +1,0 @@
-{
-  "name": "CodeBuddies Radio",
-  "description": "A nostalgic, interactive lo-fi radio memory capsule for late-night coders and developers.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

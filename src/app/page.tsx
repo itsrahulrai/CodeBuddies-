@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Play,
@@ -21,23 +23,23 @@ import {
   Clock,
 } from 'lucide-react';
 
-import { InteractiveCanvas } from './components/InteractiveCanvas';
-import { PomodoroTimer } from './components/PomodoroTimer';
-import { AmbientMixer } from './components/AmbientMixer';
-import { ComputerMonitorIDE } from './components/ComputerMonitorIDE';
-import { ShortcutsModal } from './components/ShortcutsModal';
-import { TimeOfDayModal } from './components/TimeOfDayModal';
+import { InteractiveCanvas } from '../components/InteractiveCanvas';
+import { PomodoroTimer } from '../components/PomodoroTimer';
+import { AmbientMixer } from '../components/AmbientMixer';
+import { ComputerMonitorIDE } from '../components/ComputerMonitorIDE';
+import { ShortcutsModal } from '../components/ShortcutsModal';
+import { TimeOfDayModal } from '../components/TimeOfDayModal';
 
 import {
   DEFAULT_TRACKS,
   PLAYLIST_ID,
-} from './data/mockData';
+} from '../data/mockData';
 
 import {
   TimeOfDayPeriod,
   TIME_OF_DAY_CONFIGS,
   getTimePeriodFromHour,
-} from './data/timeOfDayConfig';
+} from '../data/timeOfDayConfig';
 
 declare global {
   interface Window {
@@ -73,19 +75,13 @@ export default function App() {
      TIME OF DAY
   ===================================================== */
 
+  // Default to 'night' for the very first render so server and client
+  // markup match exactly; the real time-of-day is applied on mount below.
   const [systemPeriod, setSystemPeriod] =
-    useState<TimeOfDayPeriod>(() =>
-      getTimePeriodFromHour(
-        new Date().getHours()
-      )
-    );
+    useState<TimeOfDayPeriod>('night');
 
   const [timePeriod, setTimePeriod] =
-    useState<TimeOfDayPeriod>(() =>
-      getTimePeriodFromHour(
-        new Date().getHours()
-      )
-    );
+    useState<TimeOfDayPeriod>('night');
 
   const [isAutoTime, setIsAutoTime] =
     useState<boolean>(true);
@@ -711,7 +707,7 @@ export default function App() {
   ===================================================== */
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#07131F] text-[#F5F7FA] font-sans select-none">
+    <div className="relative w-full h-dvh overflow-hidden bg-[#07131F] text-[#F5F7FA] font-sans select-none">
 
       {/* =================================================
           HIDDEN YOUTUBE
@@ -1294,11 +1290,11 @@ export default function App() {
 
                 <div className="min-w-0">
 
-                  <p className="text-xs font-bold text-[#F5F7FA] truncate font-mono">
+                  <p className="text-xs font-bold text-[#F5F7FA] break-words font-mono">
                     {currentTrack.title}
                   </p>
 
-                  <p className="text-[11px] text-slate-400 truncate font-mono mt-0.5">
+                  <p className="text-[11px] text-slate-400 break-words font-mono mt-0.5">
                     {currentTrack.artist}
                   </p>
 
@@ -1487,14 +1483,14 @@ export default function App() {
 
                 <div className="min-w-0">
 
-                  <h3 className="font-bold text-lg text-white truncate">
+                  <h3 className="font-bold text-lg text-white break-words">
                     CODING PLAYLIST (
                     {
                       DEFAULT_TRACKS.length
                     } TRACKS)
                   </h3>
 
-                  <p className="text-[11px] text-slate-400 truncate">
+                  <p className="text-[11px] text-slate-400 break-words">
                     90s Hindi Classics, Rain Songs & Lo-Fi Focus
                   </p>
 
@@ -1660,13 +1656,13 @@ export default function App() {
 
                         <div className="min-w-0">
 
-                          <p className="text-xs font-bold text-white truncate">
+                          <p className="text-xs font-bold text-white break-words">
                             {
                               track.title
                             }
                           </p>
 
-                          <p className="text-[11px] text-slate-400 truncate">
+                          <p className="text-[11px] text-slate-400 break-words">
                             {
                               track.artist
                             }
@@ -1693,7 +1689,7 @@ export default function App() {
 
             <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-3">
 
-              <span className="text-[10px] text-slate-500 truncate">
+              <span className="text-[10px] text-slate-500 break-words">
                 {PLAYLIST_ID}
               </span>
 
