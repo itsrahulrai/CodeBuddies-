@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+:root {
+  --color-dark: #07131F;
+  --color-navy: #0B2235;
+  --color-cyan: #22C7F2;
+  --color-blue: #1677B8;
+  --color-warm-orange: #FF8A4C;
+  --color-soft-gold: #FFD18A;
+  --color-text: #F5F7FA;
+}
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--color-dark);
+    color: var(--color-text);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+}
+
+/* Custom Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(7, 21, 34, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 199, 242, 0.3);
+}
+
+/* Cinematic Glassmorphism Card */
+.cinematic-glass {
+  background: rgba(7, 21, 34, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Character Breathing Animation */
+@keyframes characterBreathe {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.002);
+  }
+}
+.animate-breathe {
+  animation: characterBreathe 5s ease-in-out infinite;
+}
+
+/* Plant Leaf Sway Animation */
+@keyframes plantSway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(1.2deg) translateY(-1px);
+  }
+}
+.animate-plant-sway {
+  animation: plantSway 6s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Screen Code Flicker & Monitor Glow */
+@keyframes screenFlicker {
+  0%, 100% { opacity: 0.92; filter: brightness(1); }
+  33% { opacity: 0.98; filter: brightness(1.08); }
+  66% { opacity: 0.88; filter: brightness(0.96); }
+}
+.animate-screen-glow {
+  animation: screenFlicker 8s ease-in-out infinite;
+}
+
+/* Sunlight Rays Shimmer */
+@keyframes lightSunlight {
+  0%, 100% { opacity: 0.25; transform: skewX(-12deg) translateX(0px); }
+  50% { opacity: 0.38; transform: skewX(-12deg) translateX(6px); }
+}
+.animate-sunlight {
+  animation: lightSunlight 9s ease-in-out infinite;
+}
+
+/* Animated Shimmer Gradient Text */
+@keyframes textShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-shimmer-text {
+  background: linear-gradient(120deg, #FFFFFF 0%, #22C7F2 35%, #FFD18A 65%, #FFFFFF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 8s ease-in-out infinite;
+}
+
+/* Ambient Slow Drifting Aurora Glow Orbs */
+@keyframes auroraDrift1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(30px, -25px) scale(1.15);
+    opacity: 0.55;
+  }
+}
+
+@keyframes auroraDrift2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(-35px, 20px) scale(1.2);
+    opacity: 0.45;
+  }
+}
+
+.animate-aurora-1 {
+  animation: auroraDrift1 14s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: auroraDrift2 18s ease-in-out infinite;
+}
+
+/* Glowing Button Ring Pulse */
+@keyframes buttonPulseRing {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(34, 199, 242, 0.35), 0 0 0 0 rgba(34, 199, 242, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(34, 199, 242, 0.65), 0 0 0 8px rgba(34, 199, 242, 0);
+  }
+}
+
+.animate-cta-pulse {
+  animation: buttonPulseRing 3.5s infinite;
+}
+
+/* 8-Bar Equalizer Spectrum */
+@keyframes eqBounce {
+  0%, 100% { height: 15%; }
+  50% { height: 100%; }
+}
+.animate-eq-1 { animation: eqBounce 0.7s ease-in-out infinite alternate; }
+.animate-eq-2 { animation: eqBounce 1.1s ease-in-out infinite alternate 0.1s; }
+.animate-eq-3 { animation: eqBounce 0.8s ease-in-out infinite alternate 0.2s; }
+.animate-eq-4 { animation: eqBounce 1.3s ease-in-out infinite alternate 0.15s; }
+.animate-eq-5 { animation: eqBounce 0.9s ease-in-out infinite alternate 0.3s; }
+.animate-eq-6 { animation: eqBounce 1.2s ease-in-out infinite alternate 0.05s; }
+.animate-eq-7 { animation: eqBounce 0.75s ease-in-out infinite alternate 0.25s; }
+.animate-eq-8 { animation: eqBounce 1.0s ease-in-out infinite alternate 0.18s; }
+
+/* Blinking Cursor */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.blinking-cursor {
+  animation: cursorBlink 0.8s infinite;
+}
+
+/* Vinyl Spin Animation */
+@keyframes spinVinyl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-vinyl {
+  animation: spinVinyl 14s linear infinite;
+}
+.animate-spin-vinyl-paused {
+  animation: spinVinyl 14s linear infinite;
+  animation-play-state: paused;
+}
+
+/* Floating Music Notes Animation */
+@keyframes floatUpNote1 {
+  0% { opacity: 0; transform: translateY(0px) scale(0.6) rotate(-15deg); }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-65px) scale(1.1) rotate(20deg); }
+}
+@keyframes floatUpNote2 {
+  0% { opacity: 0; transform: translateY(0px) scale(0.6) rotate(10deg); }
+  40% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(-80px) scale(1.2) rotate(-25deg); }
+}
+@keyframes floatUpNote3 {
+  0% { opacity: 0; transform: translateY(0px) scale(0.5) rotate(-5deg); }
+  50% { opacity: 0.95; }
+  100% { opacity: 0; transform: translateY(-75px) scale(1) rotate(15deg); }
+}
+
+.animate-float-note-1 { animation: floatUpNote1 3.2s ease-out infinite; }
+.animate-float-note-2 { animation: floatUpNote2 3.8s ease-out infinite 1.2s; }
+.animate-float-note-3 { animation: floatUpNote3 4.2s ease-out infinite 2.1s; }
+
+/* Glowing Aura Pulse for Music Player */
+@keyframes pulseGlowAura {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(34, 199, 242, 0.25), 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(34, 199, 242, 0.45), 0 25px 65px rgba(0, 0, 0, 0.65);
+  }
+}
+.player-glow-active {
+  animation: pulseGlowAura 4s ease-in-out infinite;
+}
+
+/* Nav Link Hover Underline */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background-color: #22C7F2;
+  transition: width 0.25s ease-in-out;
+  border-radius: 2px;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-plant-sway,
+  .animate-screen-glow,
+  .animate-sunlight,
+  .animate-eq-1,
+  .animate-eq-2,
+  .animate-eq-3,
+  .animate-eq-4 {
+    animation: none !important;
+  }
+}
+
+
