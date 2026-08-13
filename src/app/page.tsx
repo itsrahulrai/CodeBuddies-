@@ -12,7 +12,6 @@ import {
   Info,
   X,
   ExternalLink,
-  Menu,
   Timer,
   Sliders,
   Code,
@@ -118,9 +117,6 @@ export default function App() {
     useState<boolean>(false);
 
   const [zenMode, setZenMode] =
-    useState<boolean>(false);
-
-  const [mobileMenuOpen, setMobileMenuOpen] =
     useState<boolean>(false);
 
   /* =====================================================
@@ -273,10 +269,13 @@ export default function App() {
               height: '1',
               width: '1',
 
+              // Load the actual selected track (not the raw playlist) so the
+              // audio that plays always matches the title shown on screen.
+              videoId:
+                DEFAULT_TRACKS[0]
+                  .youtubeId,
+
               playerVars: {
-                listType:
-                  'playlist',
-                list: PLAYLIST_ID,
                 autoplay: 0,
                 controls: 0,
                 enablejsapi: 1,
@@ -313,6 +312,11 @@ export default function App() {
                       setIsPlaying(
                         false
                       );
+                    } else if (
+                      event.data === 0
+                    ) {
+                      // Video ended naturally — advance to next track
+                      handleNextTrack();
                     }
                   },
               },
@@ -331,6 +335,34 @@ export default function App() {
         initYT;
     }
   }, []);
+
+  /* =====================================================
+     LOAD CORRECT VIDEO WHEN TRACK CHANGES
+     (keeps audio in sync with the displayed title)
+  ===================================================== */
+
+  useEffect(() => {
+    if (
+      playerRef.current &&
+      playerRef.current.loadVideoById &&
+      playerRef.current.cueVideoById
+    ) {
+      try {
+        if (isPlaying) {
+          playerRef.current.loadVideoById(
+            currentTrack.youtubeId
+          );
+        } else {
+          playerRef.current.cueVideoById(
+            currentTrack.youtubeId
+          );
+        }
+      } catch {
+        // Ignore YouTube errors
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrackIdx]);
 
   /* =====================================================
      PLAY / PAUSE
@@ -421,17 +453,6 @@ export default function App() {
         nextIdx
       ].durationSec
     );
-
-    if (
-      playerRef.current &&
-      playerRef.current.nextVideo
-    ) {
-      try {
-        playerRef.current.nextVideo();
-      } catch {
-        // Ignore
-      }
-    }
   };
 
   /* =====================================================
@@ -456,17 +477,6 @@ export default function App() {
         prevIdx
       ].durationSec
     );
-
-    if (
-      playerRef.current &&
-      playerRef.current.previousVideo
-    ) {
-      try {
-        playerRef.current.previousVideo();
-      } catch {
-        // Ignore
-      }
-    }
   };
 
   /* =====================================================
@@ -745,6 +755,16 @@ export default function App() {
             alt={`Developer Workspace - ${currentConfig.name}`}
             className="w-full h-full object-cover object-center transition-all duration-1000 ease-in-out"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              // If a background image 404s (e.g. missing from the deploy),
+              // fail gracefully instead of showing a broken-image icon.
+              (e.target as HTMLImageElement).style.display = 'none';
+              // eslint-disable-next-line no-console
+              console.error(
+                'Background image failed to load:',
+                (e.target as HTMLImageElement).src
+              );
+            }}
           />
         </div>
 
@@ -1015,168 +1035,92 @@ export default function App() {
       )}
 
       {/* =================================================
-          MOBILE MENU BUTTON
+          MOBILE BOTTOM TOOLBAR — always visible, no hamburger
       ================================================= */}
 
       {!zenMode && (
-        <button
-          onClick={() =>
-            setMobileMenuOpen(
-              !mobileMenuOpen
-            )
-          }
-          className="fixed top-5 right-5 z-50 h-10 w-10 rounded-xl bg-[#07131F]/70 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center shadow-xl md:hidden"
-        >
-          {mobileMenuOpen ? (
-            <X className="w-5 h-5" />
-          ) : (
-            <Menu className="w-5 h-5" />
-          )}
-        </button>
-      )}
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-bottom">
+          <div className="bg-[#07131F]/95 backdrop-blur-xl border-t border-white/10 shadow-2xl">
+            <div className="scroll-tabs flex items-center gap-2 px-3 py-2.5 overflow-x-auto">
 
-      {/* =================================================
-          MOBILE MENU
-      ================================================= */}
+              <button
+                onClick={() => setShowPlaylistModal(true)}
+                className="shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[#22C7F2] active:scale-95 transition-all"
+              >
+                <ListMusic className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono no-truncate">Playlist</span>
+              </button>
 
-      {!zenMode &&
-        mobileMenuOpen && (
-          <div className="fixed top-[72px] left-4 right-4 z-50 md:hidden">
+              <button
+                onClick={() => setShowTimeOfDayModal(true)}
+                className="shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[#FFD18A] active:scale-95 transition-all"
+              >
+                <Clock className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono no-truncate">Mood</span>
+              </button>
 
-            <div className="p-3 rounded-2xl bg-[#07131F]/95 backdrop-blur-xl border border-white/10 shadow-2xl">
+              <button
+                onClick={() => setShowPomodoroModal(true)}
+                className="shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[#FFD18A] active:scale-95 transition-all"
+              >
+                <Timer className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono no-truncate">Timer</span>
+              </button>
 
-              <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setShowAmbientModal(true)}
+                className="shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[#22C7F2] active:scale-95 transition-all"
+              >
+                <Sliders className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono no-truncate">Sounds</span>
+              </button>
 
-                <button
-                  onClick={() => {
-                    setShowPlaylistModal(
-                      true
-                    );
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center gap-2 text-xs"
-                >
-                  <ListMusic className="w-4 h-4 text-[#22C7F2]" />
-                  Playlist
-                </button>
+              <button
+                onClick={() => setShowIdeModal(true)}
+                className="shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-emerald-400 active:scale-95 transition-all"
+              >
+                <Code className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono no-truncate">Terminal</span>
+              </button>
 
-                <button
-                  onClick={() => {
-                    setShowTimeOfDayModal(
-                      true
-                    );
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center gap-2 text-xs"
-                >
-                  <Clock className="w-4 h-4 text-[#FFD18A]" />
-                  Atmosphere
-                </button>
+              <button
+                onClick={() => setLampOn(!lampOn)}
+                className={`shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 active:scale-95 transition-all ${
+                  lampOn ? 'text-[#FFD18A]' : 'text-slate-500'
+                }`}
+              >
+                <Lightbulb className={`w-4.5 h-4.5 ${lampOn ? 'fill-[#FFD18A]' : ''}`} />
+                <span className="text-[10px] font-mono no-truncate">Lamp</span>
+              </button>
 
-                <button
-                  onClick={() => {
-                    setShowPomodoroModal(
-                      true
-                    );
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-[#FFD18A] flex items-center justify-center gap-2 text-xs"
-                >
-                  <Timer className="w-4 h-4" />
-                  Timer
-                </button>
+              <button
+                onClick={() =>
+                  setCharacterGender(characterGender === 'boy' ? 'girl' : 'boy')
+                }
+                className={`shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 active:scale-95 transition-all ${
+                  characterGender === 'girl' ? 'text-[#FB7185]' : 'text-[#22C7F2]'
+                }`}
+              >
+                <span className="text-base leading-none">
+                  {characterGender === 'girl' ? '👩‍💻' : '👨‍💻'}
+                </span>
+                <span className="text-[10px] font-mono no-truncate">
+                  {characterGender === 'girl' ? 'Girl' : 'Boy'}
+                </span>
+              </button>
 
-                <button
-                  onClick={() => {
-                    setShowAmbientModal(
-                      true
-                    );
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-[#22C7F2] flex items-center justify-center gap-2 text-xs"
-                >
-                  <Sliders className="w-4 h-4" />
-                  Sounds
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowIdeModal(
-                      true
-                    );
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-emerald-400 flex items-center justify-center gap-2 text-xs"
-                >
-                  <Code className="w-4 h-4" />
-                  Terminal
-                </button>
-
-                <button
-                  onClick={() =>
-                    setLampOn(
-                      !lampOn
-                    )
-                  }
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-[#FFD18A] flex items-center justify-center gap-2 text-xs"
-                >
-                  <Lightbulb className="w-4 h-4" />
-                  Lamp
-                </button>
-
-                <button
-                  onClick={() => {
-                    setCharacterGender(
-                      characterGender ===
-                        'boy'
-                        ? 'girl'
-                        : 'boy'
-                    );
-
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-[#22C7F2] flex items-center justify-center gap-2 text-xs"
-                >
-                  {characterGender ===
-                  'girl'
-                    ? '👩‍💻 Girl'
-                    : '👨‍💻 Boy'}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowShortcutsModal(
-                      true
-                    );
-
-                    setMobileMenuOpen(
-                      false
-                    );
-                  }}
-                  className="p-3 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center gap-2 text-xs"
-                >
-                  <Command className="w-4 h-4" />
-                  Shortcuts
-                </button>
-
-              </div>
+              <button
+                onClick={() => setShowShortcutsModal(true)}
+                className="shrink-0 flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 active:scale-95 transition-all"
+              >
+                <Command className="w-4.5 h-4.5" />
+                <span className="text-[10px] font-mono no-truncate">Keys</span>
+              </button>
 
             </div>
-
           </div>
-        )}
+        </div>
+      )}
 
       {/* =================================================
           ZEN MODE EXIT
@@ -1201,7 +1145,7 @@ export default function App() {
           MAIN HERO
       ================================================= */}
 
-      <main className="relative z-10 w-full h-full flex flex-col items-center justify-end px-4 sm:px-6 pb-[6vh] sm:pb-[8vh]">
+      <main className="relative z-10 w-full h-full flex flex-col items-center justify-end px-4 sm:px-6 pb-28 md:pb-[8vh]">
 
         {/* Ambient Glow */}
 
