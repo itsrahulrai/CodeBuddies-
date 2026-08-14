@@ -13,7 +13,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     { key: 'Spacebar', desc: 'Play / Pause Music Stream' },
     { key: '← / →', desc: 'Previous / Next Track' },
     { key: 'P / Q', desc: 'Open Playlist Queue' },
-    { key: 'K', desc: 'Funny Thock Keystroke SFX' },
+    { key: 'K / V', desc: 'Coder Meme Voice ("Project Kab Tak Hoga?", "AI Use Karo")' },
     { key: 'A', desc: 'About Code Buddy' },
     { key: 'M', desc: 'Mute / Unmute Audio' }
   ];

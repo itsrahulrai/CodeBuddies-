@@ -2,7 +2,7 @@
 
 export type KeyboardSwitchType = 'thock' | 'clicky' | 'creamy';
 
-class AudioSynthesizer {
+export class AudioSynthesizer {
   private ctx: AudioContext | null = null;
   
   // Ambient Sound Generators
@@ -313,6 +313,300 @@ class AudioSynthesizer {
     } catch {
       return { name: 'Thock', emoji: '⌨️' };
     }
+  }
+
+  // Hilarious Developer Dialogues & Voice Lines
+  public static readonly CODER_DIALOGUES = [
+    {
+      id: 'ai_use_karo',
+      speaker: 'टेक फाउंडर 🤖',
+      tagline: 'प्रोजेक्ट में AI लगाओ!',
+      hindiText: 'भाई प्रोजेक्ट में AI का यूज़ करो! सब कुछ AI से बनाओ!',
+      spokenText: 'Bhai project mein AI ka use karo na! Thoda AI aur deep learning ghusa do, sab automatic ho jayega!',
+      emoji: '🧠',
+      badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+      sfx: 'laser',
+      pitch: 1.15
+    },
+    {
+      id: 'ye_kya_bawasir',
+      speaker: 'सीनियर रिव्यूअर 🤦‍♂️',
+      tagline: 'ये क्या बवासीर बना दिए!',
+      hindiText: 'अरे भाई ये क्या बवासीर बना दिए हो!',
+      spokenText: 'Arre bhai ye kya bawasir bana diye ho! Pura code phat gaya!',
+      emoji: '🤦‍♂️',
+      badgeColor: 'bg-red-500/20 text-red-300 border-red-500/40',
+      sfx: 'facepalm',
+      pitch: 0.95
+    },
+    {
+      id: 'ye_kya_bawal_chiz',
+      speaker: 'हैकर ब्रो 😎',
+      tagline: 'ये क्या बवाल चीज़ बना दिए!',
+      hindiText: 'अरे भाई ये क्या बवाल चीज़ बना दिए! एकदम सॉलिड!',
+      spokenText: 'Arre bhai ye kya bawal cheez bana diye ho! Ekdum solid, maza aa gaya!',
+      emoji: '🔥',
+      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+      sfx: 'cheer',
+      pitch: 1.2
+    },
+    {
+      id: 'matha_pagla_diye',
+      speaker: 'फ्रस्ट्रेटेड कोडर 🤯',
+      tagline: 'माथा पगला दिए भाई!',
+      hindiText: 'अरे भाई ये क्या बना दिए, पूरा माथा पगला दिए भाई!',
+      spokenText: 'Arre bhai ye kya bana diye ho, pura matha pagla diye bhai! Kahi se kuch nahi chal raha!',
+      emoji: '🤯',
+      badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+      sfx: 'dramatic',
+      pitch: 1.25
+    },
+    {
+      id: 'project_kab_tak',
+      speaker: 'प्रोजेक्ट मैनेजर 👔',
+      tagline: 'प्रोजेक्ट कब तक होगा?!',
+      hindiText: 'भाई प्रोजेक्ट कब तक होगा? क्लाइंट का कॉल आ रहा है!',
+      spokenText: 'Bhai project kab tak hoga? Client ka phone aa raha hai, deadline kal subah hai bhai!',
+      emoji: '⏰',
+      badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+      sfx: 'alarm',
+      pitch: 1.2
+    },
+    {
+      id: 'localhost_chal_raha',
+      speaker: 'फुल-स्टैक डेवलपर 💻',
+      tagline: 'लोकलहोस्ट पे तो चल रहा था',
+      hindiText: 'मेरे लोकलहोस्ट पे तो सब मस्त चल रहा था भाई!',
+      spokenText: 'Bhai mere localhost par to ekdum smooth chal raha tha, production pe pata nahi kya ho gaya!',
+      emoji: '⚡',
+      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+      sfx: 'pop',
+      pitch: 1.05
+    },
+    {
+      id: 'bug_nahi_feature',
+      speaker: 'सीनियर आर्किटेक्ट 🧙‍♂️',
+      tagline: 'यह बग नहीं, फ़ीचर है!',
+      hindiText: 'यह बग नहीं है भाई, यह तो अनडॉक्यूमेंटेड फ़ीचर है!',
+      spokenText: 'Yeh koi bug nahi hai bhai, yeh to hamara undocumented advanced feature hai!',
+      emoji: '🐛',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+      sfx: 'spring',
+      pitch: 1.0
+    },
+    {
+      id: 'direct_production',
+      speaker: 'जूनियर डेवलपर 🚀',
+      tagline: 'डायरेक्ट प्रोडक्शन पुश कर दिया',
+      hindiText: 'डायरेक्ट प्रोडक्शन पे पुश कर दिया... अब भगवान भरोसे!',
+      spokenText: 'Direct production branch pe push kar diya bhai! Ab bhagwan hi bachaye!',
+      emoji: '💥',
+      badgeColor: 'bg-red-500/20 text-red-300 border-red-500/40',
+      sfx: 'boom',
+      pitch: 1.1
+    },
+    {
+      id: 'merge_conflict',
+      speaker: 'गिट मास्टर 💥',
+      tagline: 'मर्ज कॉन्फ्लिक्ट आ गया भाई!',
+      hindiText: 'भाई मर्ज कॉन्फ्लिक्ट आ गया! किसने मेन ब्रांच छेड़ी?!',
+      spokenText: 'Arre bhai merge conflict aa gaya! Main branch pe kisne force push kiya bhai?!',
+      emoji: '⚠️',
+      badgeColor: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+      sfx: 'error',
+      pitch: 1.15
+    },
+    {
+      id: 'two_minute_fix',
+      speaker: 'निंजा कोडर ⏱️',
+      tagline: 'बस 2 मिनट में फ़िक्स होगा',
+      hindiText: 'बस 2 मिनट में फ़िक्स कर रहा हूँ भाई... पक्का!',
+      spokenText: 'Bas do minute mein fix kar dunga bhai, bas ek semicolon miss ho gaya tha!',
+      emoji: '⏳',
+      badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
+      sfx: 'coin',
+      pitch: 1.05
+    },
+    {
+      id: 'friday_deploy',
+      speaker: 'डेवऑप्स लीड 🛑',
+      tagline: 'फ्राइडे को डिप्लॉय मत करना!',
+      hindiText: 'फ्राइडे शाम को डिप्लॉय मत करना भाई, वीकेंड उड़ जाएगा!',
+      spokenText: 'Friday evening ko galti se bhi deploy mat karna bhai, pura weekend barbaad ho jayega!',
+      emoji: '🛡️',
+      badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
+      sfx: 'whistle',
+      pitch: 1.0
+    },
+    {
+      id: 'coffee_chai',
+      speaker: 'नाइट आउल कोडर ☕',
+      tagline: 'चाय लाओ, कोड पुश करो!',
+      hindiText: 'कड़क चाय-कॉफ़ी लाओ भाई, आज रात कोड पूरा पुश होगा!',
+      spokenText: 'Ek cup kadak chai coffee lao bhai, aaj raat ko deployment khatam karke hi soyenge!',
+      emoji: '☕',
+      badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+      sfx: 'boing',
+      pitch: 1.05
+    }
+  ];
+
+  // Play Developer Voice Line with Audio Effect
+  public playCoderDialogue(dialogueIndex?: number): typeof AudioSynthesizer.CODER_DIALOGUES[0] {
+    const list = AudioSynthesizer.CODER_DIALOGUES;
+    const selected = dialogueIndex !== undefined && dialogueIndex >= 0 && dialogueIndex < list.length
+      ? list[dialogueIndex]
+      : list[Math.floor(Math.random() * list.length)];
+
+    // 1. Play accompanied Web Audio SFX
+    try {
+      this.initContext();
+      if (this.ctx) {
+        const now = this.ctx.currentTime;
+        switch (selected.sfx) {
+          case 'alarm': {
+            // Urgent Beep Beep
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.setValueAtTime(440, now + 0.08);
+            osc.frequency.setValueAtTime(880, now + 0.16);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+            break;
+          }
+          case 'laser': {
+            // AI Futuristic Laser / Synth Zap
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(1600, now);
+            osc.frequency.exponentialRampToValueAtTime(180, now + 0.22);
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.25);
+            break;
+          }
+          case 'facepalm': {
+            // Comical Wah Wah Wah Downward Horn
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.linearRampToValueAtTime(320, now + 0.1);
+            osc.frequency.linearRampToValueAtTime(250, now + 0.2);
+            osc.frequency.linearRampToValueAtTime(160, now + 0.35);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.42);
+            break;
+          }
+          case 'cheer': {
+            // Triumphant Fanfare Arpeggio (C-E-G-C)
+            const freqs = [523.25, 659.25, 783.99, 1046.5];
+            freqs.forEach((f, i) => {
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(f, now + i * 0.06);
+              gain.gain.setValueAtTime(0.2, now + i * 0.06);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.25);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(now + i * 0.06);
+              osc.stop(now + i * 0.06 + 0.26);
+            });
+            break;
+          }
+          case 'dramatic': {
+            // Dramatic Dun Dun Dun Shock Chord
+            const chords = [130.81, 155.56, 196.0]; // C minor
+            chords.forEach(f => {
+              if (!this.ctx) return;
+              const osc = this.ctx.createOscillator();
+              const gain = this.ctx.createGain();
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(f, now);
+              gain.gain.setValueAtTime(0.22, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+              osc.connect(gain);
+              gain.connect(this.ctx.destination);
+              osc.start(now);
+              osc.stop(now + 0.48);
+            });
+            break;
+          }
+          case 'boom': {
+            // Low Deep Sub Blast
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(260, now);
+            osc.frequency.exponentialRampToValueAtTime(35, now + 0.28);
+            gain.gain.setValueAtTime(0.38, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.36);
+            break;
+          }
+          default: {
+            // Crisp Mechanical Pop / Thock
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.16);
+            break;
+          }
+        }
+      }
+    } catch {
+      // Audio error catch
+    }
+
+    // 2. Play Text-To-Speech using native SpeechSynthesis
+    try {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Stop any previous speech
+        const utterance = new SpeechSynthesisUtterance(selected.spokenText);
+        utterance.rate = 1.05;
+        utterance.pitch = selected.pitch || 1.1;
+        utterance.volume = 1.0;
+
+        // Try to pick an expressive Hindi / Indian English / English voice if available
+        const voices = window.speechSynthesis.getVoices();
+        const hindiVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN') || v.name.toLowerCase().includes('india') || v.name.toLowerCase().includes('hindi'));
+        if (hindiVoice) {
+          utterance.voice = hindiVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch {
+      // Fallback cleanly
+    }
+
+    return selected;
   }
 
   // Mechanical Keyboard Continuous Typing Loop

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Info, X, ExternalLink, Search, Clock, Sparkles, Music2, Youtube, RefreshCw, Check } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Info, X, ExternalLink, Search, Clock, Sparkles, Music2, Youtube, RefreshCw, Check, MessageSquare, Mic, Bot, Terminal, Flame } from 'lucide-react';
 import { InteractiveCanvas } from './components/InteractiveCanvas';
 import { TimeOfDayModal } from './components/TimeOfDayModal';
 import { DEFAULT_TRACKS, PLAYLIST_ID as DEFAULT_PLAYLIST_ID } from './data/mockData';
 import { Track } from './types';
 import { TimeOfDayPeriod, TIME_OF_DAY_CONFIGS, getTimePeriodFromHour } from './data/timeOfDayConfig';
-import { audioSynth } from './utils/audioSynthesizer';
+import { audioSynth, AudioSynthesizer } from './utils/audioSynthesizer';
 
 declare global {
   interface Window {
@@ -60,9 +60,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   
-  // Funny Keystroke Sound Feedback State
-  const [funnySoundFeedback, setFunnySoundFeedback] = useState<{ name: string; emoji: string; id: number } | null>(null);
-
   // Mouse Parallax coordinates
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -442,10 +439,9 @@ export default function App() {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // Play Funny Thock Keystroke Sound
-  const handlePlayFunnyThock = () => {
-    const result = audioSynth.playFunnyKeystroke(1.3);
-    setFunnySoundFeedback({ ...result, id: Date.now() });
+  // Play Funny Developer Meme Audio Voice Line
+  const handlePlayCoderDialogue = (dialogueIndex?: number) => {
+    audioSynth.playCoderDialogue(dialogueIndex);
   };
 
   // Handle Keyboard Shortcuts
@@ -465,8 +461,8 @@ export default function App() {
         handleNextTrack();
       } else if (e.code === 'KeyP' && e.altKey || e.code === 'ArrowLeft') {
         handlePrevTrack();
-      } else if (e.code === 'KeyK' || e.code === 'KeyH') {
-        handlePlayFunnyThock();
+      } else if (e.code === 'KeyK' || e.code === 'KeyV' || e.code === 'KeyH') {
+        handlePlayCoderDialogue();
       }
     };
 
@@ -645,32 +641,25 @@ export default function App() {
           ALL NIGHT ON LOCALHOST
         </p>
 
-        {/* Center Interactive Action Button with Funny Sound Effects */}
-        <div className="mt-2.5 sm:mt-4 pointer-events-auto flex flex-col items-center">
-          {funnySoundFeedback && (
-            <div
-              key={funnySoundFeedback.id}
-              className="animate-bounce mb-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/50 backdrop-blur-md text-[11px] font-mono font-bold text-cyan-300 shadow-[0_4px_12px_rgba(6,182,212,0.4)] flex items-center space-x-1.5"
-            >
-              <span>{funnySoundFeedback.emoji}</span>
-              <span>{funnySoundFeedback.name}</span>
-            </div>
-          )}
-
+        {/* Center Interactive Action Button with Coder Meme Voice & Sounds */}
+        <div className="mt-2.5 sm:mt-3.5 pointer-events-auto flex flex-col items-center max-w-xl w-full">
+          {/* Main Voice & SFX Trigger Button */}
           <button
-            onClick={handlePlayFunnyThock}
-            className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-2xl bg-black/60 hover:bg-black/80 backdrop-blur-xl border border-white/20 hover:border-cyan-400/60 text-slate-200 hover:text-white transition-all shadow-2xl flex items-center space-x-2 sm:space-x-2.5 group active:scale-95 cursor-pointer"
-            title="Click or press 'K' for funny keystroke sound effects"
+            onClick={() => handlePlayCoderDialogue()}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-black/80 via-black/90 to-black/80 hover:from-cyan-950/80 hover:to-indigo-950/80 backdrop-blur-xl border border-cyan-400/40 hover:border-cyan-300 text-slate-200 hover:text-white transition-all shadow-[0_10px_25px_rgba(0,0,0,0.7)] hover:shadow-[0_10px_30px_rgba(6,182,212,0.3)] flex items-center space-x-3 group active:scale-95 cursor-pointer"
+            title="क्लिक करें या 'K' / 'V' दबाएं"
           >
-            <div className="p-1 rounded-lg bg-white/10 group-hover:bg-cyan-400 group-hover:text-black transition-colors text-slate-300">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="p-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 group-hover:bg-cyan-400 group-hover:text-black transition-colors shrink-0">
+              <Mic className="w-4 h-4" />
             </div>
-            <div className="text-left font-mono">
-              <div className="text-[10px] sm:text-[11px] font-bold text-white tracking-wide leading-tight group-hover:text-cyan-300 transition-colors">
-                मजेदार कीस्ट्रोक
+            <div className="text-left font-sans">
+              <div className="text-[11px] sm:text-[12px] font-bold text-white tracking-wide leading-tight group-hover:text-cyan-200 transition-colors flex items-center space-x-1.5">
+                <span>प्रोजेक्ट कब तक होगा?! AI लगाओ!</span>
+                <span className="text-xs">🤖</span>
               </div>
-              <div className="text-[7.5px] sm:text-[8.5px] text-slate-400 tracking-wider uppercase font-sans">
-                FUNNY THOCK (K)
+              <div className="text-[8px] sm:text-[9px] text-cyan-300/80 tracking-wide font-sans flex items-center space-x-1.5 mt-0.5">
+                <span>कोडर मीम आवाज़ और साउंड</span>
+                <span className="px-1 py-0.2 rounded bg-white/10 text-white font-mono font-bold text-[7.5px]">K / V</span>
               </div>
             </div>
           </button>
@@ -1018,7 +1007,7 @@ export default function App() {
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">Space</kbd> Play / Pause Stream</li>
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">← / →</kbd> Previous / Next Track</li>
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">P / Q</kbd> Coding Playlist Queue</li>
-                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">K</kbd> Funny Thock Keystroke SFX</li>
+                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">K / V</kbd> Coder Meme Voice ("Project Kab Tak Hoga?", "AI Use Karo")</li>
                 </ul>
               </div>
             </div>
