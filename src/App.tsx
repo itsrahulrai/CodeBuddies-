@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Info, X, ExternalLink, Eye, Search, Clock, Sparkles, Sliders, Music2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Info, X, ExternalLink, Eye, Search, Clock, Sparkles, Music2, Youtube, RefreshCw, Check } from 'lucide-react';
 import { InteractiveCanvas } from './components/InteractiveCanvas';
 import { TimeOfDayModal } from './components/TimeOfDayModal';
-import { CodingSoundStation } from './components/CodingSoundStation';
-import { DEFAULT_TRACKS } from './data/mockData';
+import { DEFAULT_TRACKS, PLAYLIST_ID as DEFAULT_PLAYLIST_ID } from './data/mockData';
+import { Track } from './types';
 import { TimeOfDayPeriod, TIME_OF_DAY_CONFIGS, getTimePeriodFromHour } from './data/timeOfDayConfig';
 import { audioSynth } from './utils/audioSynthesizer';
+
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
 
 export default function App() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -14,6 +21,28 @@ export default function App() {
   const [duration, setDuration] = useState<number>(285);
   const [volume, setVolume] = useState<number>(80);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+
+  // YouTube Playlist Integration State
+  const [playlistId, setPlaylistId] = useState<string>(DEFAULT_PLAYLIST_ID);
+  const [customPlaylistInput, setCustomPlaylistInput] = useState<string>('https://youtube.com/playlist?list=PLrQCktvMYPpDin_kQUIm61mmGJI6ZHPAK&si=UiTDeH6CXLEmtyKy');
+  const [playlistTracks, setPlaylistTracks] = useState<Track[]>(DEFAULT_TRACKS);
+  const [activeTrack, setActiveTrack] = useState<{
+    title: string;
+    artist: string;
+    coverUrl: string;
+    genre: string;
+    videoId?: string;
+  }>({
+    title: DEFAULT_TRACKS[0].title,
+    artist: DEFAULT_TRACKS[0].artist,
+    coverUrl: DEFAULT_TRACKS[0].coverUrl,
+    genre: DEFAULT_TRACKS[0].genre,
+    videoId: DEFAULT_TRACKS[0].youtubeId
+  });
+
+  const [isYouTubeReady, setIsYouTubeReady] = useState<boolean>(false);
+  const [ytError, setYtError] = useState<boolean>(false);
+  const [importSuccess, setImportSuccess] = useState<boolean>(false);
 
   // Time-of-Day & Character Gender Feature State
   const [systemPeriod, setSystemPeriod] = useState<TimeOfDayPeriod>(() => getTimePeriodFromHour(new Date().getHours()));
@@ -26,7 +55,6 @@ export default function App() {
   // Modals & Feature States
   const [showPlaylistModal, setShowPlaylistModal] = useState<boolean>(false);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
-  const [showSoundDeck, setShowSoundDeck] = useState<boolean>(false);
   const [zenMode, setZenMode] = useState<boolean>(false);
 
   // Playlist Filter State
@@ -37,8 +65,148 @@ export default function App() {
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const currentTrack = DEFAULT_TRACKS[currentTrackIdx] || DEFAULT_TRACKS[0];
+  const ytPlayerRef = useRef<any>(null);
   const currentConfig = TIME_OF_DAY_CONFIGS[timePeriod] || TIME_OF_DAY_CONFIGS.night;
+
+  // Initialize YouTube Iframe Player for Playlist (PLrQCktvMYPpDin_kQUIm61mmGJI6ZHPAK)
+  useEffect(() => {
+    let checkTimer: NodeJS.Timeout;
+
+    const setupPlayer = () => {
+      if (!window.YT || !window.YT.Player) return;
+      try {
+        if (ytPlayerRef.current && ytPlayerRef.current.destroy) {
+          ytPlayerRef.current.destroy();
+        }
+
+        ytPlayerRef.current = new window.YT.Player('youtube-stream-iframe', {
+          height: '1',
+          width: '1',
+          playerVars: {
+            listType: 'playlist',
+            list: playlistId,
+            autoplay: 0,
+            controls: 0,
+            enablejsapi: 1,
+            origin: window.location.origin
+          },
+          events: {
+            onReady: (event: any) => {
+              setIsYouTubeReady(true);
+              setYtError(false);
+              event.target.setVolume(volume);
+              if (isMuted) event.target.mute();
+
+              // Fetch playlist video IDs if available
+              try {
+                const playlistIds = event.target.getPlaylist();
+                if (playlistIds && Array.isArray(playlistIds) && playlistIds.length > 0) {
+                  const dynamicTracks: Track[] = playlistIds.map((vId: string, idx: number) => ({
+                    id: `yt-${vId}-${idx}`,
+                    youtubeId: vId,
+                    audioUrl: DEFAULT_TRACKS[idx % DEFAULT_TRACKS.length].audioUrl,
+                    title: DEFAULT_TRACKS[idx % DEFAULT_TRACKS.length]?.title || `Playlist Track #${idx + 1}`,
+                    artist: DEFAULT_TRACKS[idx % DEFAULT_TRACKS.length]?.artist || "YouTube Playlist",
+                    duration: DEFAULT_TRACKS[idx % DEFAULT_TRACKS.length]?.duration || "04:30",
+                    durationSec: DEFAULT_TRACKS[idx % DEFAULT_TRACKS.length]?.durationSec || 270,
+                    coverUrl: `https://img.youtube.com/vi/${vId}/hqdefault.jpg`,
+                    genre: "Playlist"
+                  }));
+                  setPlaylistTracks(dynamicTracks);
+                }
+              } catch (e) {
+                console.log("Could not read YT playlist array directly", e);
+              }
+            },
+            onStateChange: (event: any) => {
+              // 1 = PLAYING, 2 = PAUSED, 0 = ENDED
+              if (event.data === 1) {
+                setIsPlaying(true);
+                try {
+                  const videoData = event.target.getVideoData();
+                  if (videoData && videoData.title) {
+                    setActiveTrack({
+                      title: videoData.title,
+                      artist: videoData.author || "YouTube Music",
+                      coverUrl: videoData.video_id
+                        ? `https://img.youtube.com/vi/${videoData.video_id}/hqdefault.jpg`
+                        : DEFAULT_TRACKS[0].coverUrl,
+                      genre: "YouTube Live",
+                      videoId: videoData.video_id
+                    });
+                  }
+                  const dur = event.target.getDuration();
+                  if (dur && dur > 0) {
+                    setDuration(dur);
+                  }
+                  const idx = event.target.getPlaylistIndex();
+                  if (typeof idx === 'number' && idx >= 0) {
+                    setCurrentTrackIdx(idx);
+                  }
+                } catch (e) {
+                  console.log("Error reading video metadata", e);
+                }
+              } else if (event.data === 2) {
+                setIsPlaying(false);
+              } else if (event.data === 0) {
+                handleNextTrack();
+              }
+            },
+            onError: (err: any) => {
+              console.warn("YouTube Player error:", err);
+              setYtError(true);
+            }
+          }
+        });
+      } catch (err) {
+        console.warn("Failed to instantiate YT Player", err);
+      }
+    };
+
+    if (window.YT && window.YT.Player) {
+      setupPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = setupPlayer;
+      checkTimer = setInterval(() => {
+        if (window.YT && window.YT.Player && !ytPlayerRef.current) {
+          setupPlayer();
+          clearInterval(checkTimer);
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (checkTimer) clearInterval(checkTimer);
+    };
+  }, [playlistId]);
+
+  // Synchronize playback progress timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPlaying) {
+      timer = setInterval(() => {
+        if (ytPlayerRef.current && isYouTubeReady && !ytError) {
+          try {
+            const cur = ytPlayerRef.current.getCurrentTime();
+            if (typeof cur === 'number') {
+              setCurrentTime(cur);
+            }
+            const dur = ytPlayerRef.current.getDuration();
+            if (typeof dur === 'number' && dur > 0 && dur !== duration) {
+              setDuration(dur);
+            }
+          } catch {
+            setCurrentTime((prev) => prev + 1);
+          }
+        } else if (audioRef.current) {
+          setCurrentTime(audioRef.current.currentTime);
+        } else {
+          setCurrentTime((prev) => (prev >= duration ? 0 : prev + 1));
+        }
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isPlaying, isYouTubeReady, ytError, duration]);
 
   // Real-time System Clock & Time-of-Day Auto Sync
   useEffect(() => {
@@ -72,76 +240,197 @@ export default function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Update audio source whenever currentTrackIdx changes
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.src = currentTrack.audioUrl;
-      audioRef.current.load();
-      setDuration(currentTrack.durationSec);
-      setCurrentTime(0);
+  const togglePlay = () => {
+    const nextPlayState = !isPlaying;
+    setIsPlaying(nextPlayState);
 
-      if (isPlaying) {
-        audioRef.current.play().catch((err) => {
-          console.warn("Autoplay audio blocked or pending user action", err);
-        });
+    if (ytPlayerRef.current && isYouTubeReady && !ytError) {
+      try {
+        if (nextPlayState) {
+          ytPlayerRef.current.playVideo();
+        } else {
+          ytPlayerRef.current.pauseVideo();
+        }
+        return;
+      } catch (err) {
+        console.warn("YouTube play command failed, falling back to audio tag", err);
       }
     }
-  }, [currentTrackIdx]);
 
-  // Handle Play/Pause
-  useEffect(() => {
     if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch((err) => {
-          console.warn("Audio play prevented:", err);
-          setIsPlaying(false);
-        });
+      if (nextPlayState) {
+        audioRef.current.play().catch(() => {});
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying]);
-
-  // Handle volume & mute
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume / 100;
-      audioRef.current.muted = isMuted;
-    }
-  }, [volume, isMuted]);
-
-  const togglePlay = () => {
-    setIsPlaying((prev) => !prev);
   };
 
   const handleNextTrack = () => {
-    const nextIdx = (currentTrackIdx + 1) % DEFAULT_TRACKS.length;
+    const nextIdx = (currentTrackIdx + 1) % playlistTracks.length;
     setCurrentTrackIdx(nextIdx);
+    setCurrentTime(0);
+
+    if (ytPlayerRef.current && isYouTubeReady && !ytError) {
+      try {
+        ytPlayerRef.current.nextVideo();
+        return;
+      } catch {}
+    }
+
+    const nextTrack = playlistTracks[nextIdx];
+    setActiveTrack({
+      title: nextTrack.title,
+      artist: nextTrack.artist,
+      coverUrl: nextTrack.coverUrl,
+      genre: nextTrack.genre,
+      videoId: nextTrack.youtubeId
+    });
+    setDuration(nextTrack.durationSec);
   };
 
   const handlePrevTrack = () => {
-    const prevIdx = (currentTrackIdx - 1 + DEFAULT_TRACKS.length) % DEFAULT_TRACKS.length;
+    const prevIdx = (currentTrackIdx - 1 + playlistTracks.length) % playlistTracks.length;
     setCurrentTrackIdx(prevIdx);
+    setCurrentTime(0);
+
+    if (ytPlayerRef.current && isYouTubeReady && !ytError) {
+      try {
+        ytPlayerRef.current.previousVideo();
+        return;
+      } catch {}
+    }
+
+    const prevTrack = playlistTracks[prevIdx];
+    setActiveTrack({
+      title: prevTrack.title,
+      artist: prevTrack.artist,
+      coverUrl: prevTrack.coverUrl,
+      genre: prevTrack.genre,
+      videoId: prevTrack.youtubeId
+    });
+    setDuration(prevTrack.durationSec);
+  };
+
+  const handleSelectTrack = (idx: number) => {
+    setCurrentTrackIdx(idx);
+    setCurrentTime(0);
+    setIsPlaying(true);
+    setShowPlaylistModal(false);
+
+    if (ytPlayerRef.current && isYouTubeReady && !ytError) {
+      try {
+        ytPlayerRef.current.playVideoAt(idx);
+        return;
+      } catch {}
+    }
+
+    const selectedTrack = playlistTracks[idx];
+    if (selectedTrack) {
+      setActiveTrack({
+        title: selectedTrack.title,
+        artist: selectedTrack.artist,
+        coverUrl: selectedTrack.coverUrl,
+        genre: selectedTrack.genre,
+        videoId: selectedTrack.youtubeId
+      });
+      setDuration(selectedTrack.durationSec);
+      if (audioRef.current) {
+        audioRef.current.src = selectedTrack.audioUrl;
+        audioRef.current.play().catch(() => {});
+      }
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
     setVolume(val);
     setIsMuted(val === 0);
+
+    if (ytPlayerRef.current && isYouTubeReady) {
+      try {
+        ytPlayerRef.current.setVolume(val);
+        if (val === 0) ytPlayerRef.current.mute();
+        else ytPlayerRef.current.unMute();
+      } catch {}
+    }
+
+    if (audioRef.current) {
+      audioRef.current.volume = val / 100;
+      audioRef.current.muted = val === 0;
+    }
   };
 
   const toggleMute = () => {
-    setIsMuted((prev) => !prev);
+    const nextMute = !isMuted;
+    setIsMuted(nextMute);
+
+    if (ytPlayerRef.current && isYouTubeReady) {
+      try {
+        if (nextMute) ytPlayerRef.current.mute();
+        else ytPlayerRef.current.unMute();
+      } catch {}
+    }
+
+    if (audioRef.current) {
+      audioRef.current.muted = nextMute;
+    }
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || duration <= 0) return;
+    if (duration <= 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, clickX / rect.width));
     const newTime = percentage * duration;
-    audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
+
+    if (ytPlayerRef.current && isYouTubeReady && !ytError) {
+      try {
+        ytPlayerRef.current.seekTo(newTime, true);
+        return;
+      } catch {}
+    }
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  };
+
+  // Import custom playlist link handler
+  const handleLoadCustomPlaylist = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customPlaylistInput.trim()) return;
+
+    let extractedId = customPlaylistInput.trim();
+    if (extractedId.includes('list=')) {
+      const match = extractedId.match(/list=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        extractedId = match[1];
+      }
+    } else if (extractedId.includes('youtu.be/')) {
+      const match = extractedId.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        extractedId = match[1];
+      }
+    }
+
+    setPlaylistId(extractedId);
+    setImportSuccess(true);
+    setTimeout(() => setImportSuccess(false), 3000);
+
+    if (ytPlayerRef.current && isYouTubeReady) {
+      try {
+        ytPlayerRef.current.loadPlaylist({
+          list: extractedId,
+          listType: 'playlist',
+          index: 0
+        });
+        setIsPlaying(true);
+      } catch (err) {
+        console.warn("Could not load playlist directly", err);
+      }
+    }
   };
 
   const formatTime = (secs: number) => {
@@ -149,30 +438,6 @@ export default function App() {
     const m = Math.floor(safeSecs / 60);
     const s = Math.floor(safeSecs % 60);
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
-  // Quick Mood Presets (1-tap atmosphere switch)
-  const MOOD_PRESETS: { id: TimeOfDayPeriod; label: string; icon: string }[] = [
-    { id: 'rainy_storm', label: 'Tokyo Rain', icon: '🌧️' },
-    { id: 'cozy_cafe', label: 'Cafe Study', icon: '☕' },
-    { id: 'tokyo_cyber', label: 'Cyber Night', icon: '🌙' },
-    { id: 'starry_galaxy', label: 'Deep Galaxy', icon: '✨' },
-    { id: 'morning', label: 'Dawn Flow', icon: '🌅' },
-  ];
-
-  const applyMood = (moodId: TimeOfDayPeriod) => {
-    setTimePeriod(moodId);
-    setIsAutoTime(false);
-    
-    // Trigger fitting ambient sound preset
-    if (moodId === 'rainy_storm') {
-      audioSynth.setRainActive(true, 0.4);
-    } else if (moodId === 'cozy_cafe') {
-      audioSynth.setCafeActive(true, 0.35);
-      audioSynth.setKeyboardActive(true, 0.3);
-    } else if (moodId === 'starry_galaxy') {
-      audioSynth.setWavesActive(true, 0.35);
-    }
   };
 
   // Handle Keyboard Shortcuts
@@ -186,8 +451,6 @@ export default function App() {
         toggleMute();
       } else if (e.code === 'KeyP' || e.code === 'KeyQ') {
         setShowPlaylistModal((prev) => !prev);
-      } else if (e.code === 'KeyS' || e.code === 'KeyC') {
-        setShowSoundDeck((prev) => !prev);
       } else if (e.code === 'KeyA') {
         setShowAboutModal((prev) => !prev);
       } else if (e.code === 'KeyZ') {
@@ -203,10 +466,10 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, currentTrackIdx, isMuted]);
+  }, [isPlaying, currentTrackIdx, isMuted, playlistTracks]);
 
   // Filter Tracks
-  const filteredTracks = DEFAULT_TRACKS.filter((track) => {
+  const filteredTracks = playlistTracks.filter((track) => {
     const matchesSearch =
       track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       track.artist.toLowerCase().includes(searchQuery.toLowerCase());
@@ -219,26 +482,17 @@ export default function App() {
   return (
     <div className="relative w-screen h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#07131F] text-[#F5F7FA] font-sans select-none flex flex-col justify-between">
       
-      {/* HTML5 Audio Player Engine with Exact Song Synchronization */}
+      {/* Hidden YouTube Iframe Stream Player (Plays exact playlist in background) */}
+      <div className="fixed -top-96 -left-96 w-1 h-1 opacity-0 pointer-events-none overflow-hidden" tabIndex={-1}>
+        <div id="youtube-stream-iframe"></div>
+      </div>
+
+      {/* HTML5 Audio Player Engine with Exact Song Synchronization Fallback */}
       <audio
         ref={audioRef}
-        src={currentTrack.audioUrl}
+        src={DEFAULT_TRACKS[currentTrackIdx % DEFAULT_TRACKS.length].audioUrl}
         preload="auto"
-        onTimeUpdate={() => {
-          if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
-          }
-        }}
-        onLoadedMetadata={() => {
-          if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
-            setDuration(audioRef.current.duration);
-          }
-        }}
         onEnded={handleNextTrack}
-        onError={() => {
-          console.warn("Audio stream error, playing next track");
-          handleNextTrack();
-        }}
       />
 
       {/* 1. HERO ARTWORK BACKGROUND (85% Focus) WITH 3D PARALLAX */}
@@ -316,7 +570,7 @@ export default function App() {
         {/* Right: Digital Clock + Live Status + Clean Capsule Actions */}
         <div className="flex items-center space-x-3 sm:space-x-4">
           
-          {/* Clock & Status (Screenshot Style) */}
+          {/* Clock & Status */}
           <div className="text-right font-mono hidden xs:block">
             <div className="text-sm sm:text-base font-bold text-white tracking-wide leading-none flex items-baseline justify-end space-x-1">
               <span>{formattedClock ? formattedClock.slice(0, 5) : '16:51'}</span>
@@ -326,7 +580,7 @@ export default function App() {
             </div>
             <div className="flex items-center justify-end space-x-1.5 text-[9px] sm:text-[10px] text-amber-300/90 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-              <span className="font-semibold uppercase tracking-wider">500+ TRACKS</span>
+              <span className="font-semibold uppercase tracking-wider">{playlistTracks.length} TRACKS</span>
             </div>
           </div>
 
@@ -352,20 +606,6 @@ export default function App() {
               <span className="hidden md:inline font-sans text-[11px] font-medium">{currentConfig.name}</span>
             </button>
 
-            {/* Coding Sounds Drawer Trigger */}
-            <button
-              onClick={() => setShowSoundDeck((prev) => !prev)}
-              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-full backdrop-blur-md border transition-all text-xs font-mono flex items-center space-x-1 shadow-sm active:scale-95 ${
-                showSoundDeck
-                  ? 'bg-cyan-400 text-black border-cyan-400 font-bold'
-                  : 'bg-black/40 hover:bg-black/60 text-slate-200 border-white/15 hover:border-white/30'
-              }`}
-              title="Coding Soundscapes & SFX (S)"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline font-sans text-[11px] font-medium">Sounds</span>
-            </button>
-
             {/* Zen Mode */}
             <button
               onClick={() => setZenMode(true)}
@@ -379,17 +619,17 @@ export default function App() {
         </div>
       </header>
 
-      {/* 3. CENTER HERO: ICONIC DISPLAY TYPOGRAPHY & INTERACTIVE ACTION BUTTON (SCREENSHOT STYLE) */}
+      {/* 3. CENTER HERO: ICONIC DISPLAY TYPOGRAPHY & INTERACTIVE ACTION BUTTON */}
       <div className={`fixed inset-0 flex flex-col items-center justify-center z-20 pointer-events-none transition-all duration-700 ${zenMode ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         
         {/* Track Label Eyebrow */}
         <div className="text-center space-y-1 mb-1">
-          <p className="font-mono text-[10px] sm:text-xs tracking-[0.28em] sm:tracking-[0.35em] text-slate-200 uppercase font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-90">
-            500 TRACKS • NON-STOP
+          <p className="font-mono text-[10px] sm:text-xs tracking-[0.28em] sm:tracking-[0.35em] text-slate-200 uppercase font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-90 flex items-center justify-center space-x-2">
+            <span>{playlistTracks.length} TRACKS • NON-STOP STREAM</span>
           </p>
         </div>
 
-        {/* Massive White Headline (Matching Screenshot's "बस ड्राइवर" Style) */}
+        {/* Massive White Headline */}
         <h2 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tight text-center select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.7)] leading-none">
           CODE BUDDY
         </h2>
@@ -399,7 +639,7 @@ export default function App() {
           ALL NIGHT ON LOCALHOST
         </p>
 
-        {/* Center Interactive Action Button (Like "HORN OK PLEASE" in the screenshot) */}
+        {/* Center Interactive Action Button */}
         <div className="mt-5 pointer-events-auto">
           <button
             onClick={() => audioSynth.playKeyClick(1.2, 'thock')}
@@ -422,14 +662,7 @@ export default function App() {
 
       </div>
 
-      {/* 4. FLOATING CODING SOUND DECK DRAWER */}
-      {showSoundDeck && (
-        <div className="fixed top-20 right-3 sm:right-8 z-40 w-80 sm:w-96 animate-fade-in pointer-events-auto">
-          <CodingSoundStation onClose={() => setShowSoundDeck(false)} />
-        </div>
-      )}
-
-      {/* 5. FLOATING PILL PLAYER & KEYBOARD SHORTCUTS (SCREENSHOT REPLICA) */}
+      {/* 4. FLOATING PILL PLAYER & KEYBOARD SHORTCUTS */}
       <footer className={`fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-[94vw] sm:max-w-2xl px-2 transition-all duration-500 pointer-events-auto flex flex-col items-center space-y-2.5 ${zenMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
         
         {/* Floating Capsule Player */}
@@ -445,8 +678,8 @@ export default function App() {
               title="Click to browse playlist (Q)"
             >
               <img
-                src={currentTrack.coverUrl}
-                alt={currentTrack.title}
+                src={activeTrack.coverUrl}
+                alt={activeTrack.title}
                 className={`w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform ${isPlaying ? 'animate-spin-vinyl' : 'animate-spin-vinyl-paused'}`}
                 referrerPolicy="no-referrer"
               />
@@ -457,11 +690,14 @@ export default function App() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-1.5">
                 <p className="text-xs sm:text-sm font-bold text-white truncate font-sans tracking-tight leading-tight">
-                  {currentTrack.title}
+                  {activeTrack.title}
                 </p>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate font-sans mt-0.5">
-                {currentTrack.artist}
+              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate font-sans mt-0.5 flex items-center space-x-1.5">
+                <span>{activeTrack.artist}</span>
+                {isPlaying && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                )}
               </p>
 
               {/* Minimal Scrubber & Timestamps */}
@@ -473,7 +709,7 @@ export default function App() {
                   title="Seek position (← / →)"
                 >
                   <div
-                    className="h-full bg-white transition-all duration-100 rounded-full"
+                    className="h-full bg-cyan-400 transition-all duration-100 rounded-full"
                     style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
                   ></div>
                 </div>
@@ -495,7 +731,7 @@ export default function App() {
               <SkipBack className="w-4 h-4 fill-slate-300 hover:fill-white" />
             </button>
 
-            {/* Solid White Circular Play/Pause (Screenshot Replica) */}
+            {/* Solid White Circular Play/Pause */}
             <button
               onClick={togglePlay}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-slate-100 text-black flex items-center justify-center shadow-lg active:scale-90 transition-all font-bold shrink-0"
@@ -526,7 +762,7 @@ export default function App() {
               {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
             </button>
 
-            {/* Queue / Playlist (Icon like screenshot '≡') */}
+            {/* Queue / Playlist */}
             <button
               onClick={() => setShowPlaylistModal(true)}
               className="p-1.5 rounded-full text-slate-300 hover:text-white transition-all"
@@ -539,7 +775,7 @@ export default function App() {
 
         </div>
 
-        {/* Bottom Inline Keyboard Shortcuts Bar (Screenshot Replica) */}
+        {/* Bottom Inline Keyboard Shortcuts Bar */}
         <div className="hidden sm:flex items-center space-x-3 text-[10px] font-mono text-slate-400 select-none">
           <div className="flex items-center space-x-1">
             <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-white font-bold text-[9px]">Space</kbd>
@@ -560,10 +796,6 @@ export default function App() {
             <span className="uppercase tracking-wider">QUEUE</span>
           </div>
           <div className="flex items-center space-x-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-white font-bold text-[9px]">S</kbd>
-            <span className="uppercase tracking-wider">SOUNDS</span>
-          </div>
-          <div className="flex items-center space-x-1">
             <kbd className="px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-white font-bold text-[9px]">K</kbd>
             <span className="uppercase tracking-wider">KEYSTROKE</span>
           </div>
@@ -571,7 +803,7 @@ export default function App() {
 
       </footer>
 
-      {/* 6. PLAYLIST MODAL / DRAWER WITH SEARCH & GENRE FILTERS */}
+      {/* 6. PLAYLIST MODAL / DRAWER WITH CUSTOM YOUTUBE URL INPUT & SEARCH */}
       {showPlaylistModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in">
           <div className="w-full max-w-xl max-h-[92vh] flex flex-col bg-[#0B2235]/95 border border-white/15 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-3 sm:space-y-4 relative text-left overflow-hidden">
@@ -579,12 +811,19 @@ export default function App() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center space-x-2.5">
-                <div className="p-2 rounded-xl bg-[#22C7F2]/10 border border-[#22C7F2]/30 text-[#22C7F2]">
-                  <ListMusic className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400">
+                  <Youtube className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-lg text-white">CODING PLAYLIST ({DEFAULT_TRACKS.length} TRACKS)</h3>
-                  <p className="font-mono text-[11px] text-slate-400">90s Hindi Classics, Rain Songs & Lo-Fi Focus Streams</p>
+                  <h3 className="font-display font-bold text-lg text-white flex items-center space-x-2">
+                    <span>YOUTUBE PLAYLIST</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 font-mono">
+                      {playlistTracks.length} TRACKS
+                    </span>
+                  </h3>
+                  <p className="font-mono text-[11px] text-slate-400">
+                    Active: <span className="text-amber-300 font-semibold">{playlistId}</span>
+                  </p>
                 </div>
               </div>
               <button
@@ -595,13 +834,45 @@ export default function App() {
               </button>
             </div>
 
+            {/* Custom Playlist Link Input */}
+            <form onSubmit={handleLoadCustomPlaylist} className="bg-black/50 p-2.5 rounded-2xl border border-white/10 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] font-mono text-slate-300">
+                <span className="font-bold flex items-center space-x-1.5 text-cyan-300">
+                  <Youtube className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Load Custom YouTube Playlist / Link:</span>
+                </span>
+                {importSuccess && (
+                  <span className="text-emerald-400 flex items-center space-x-1">
+                    <Check className="w-3 h-3" />
+                    <span>Loaded!</span>
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Paste YouTube playlist URL or ID"
+                  value={customPlaylistInput}
+                  onChange={(e) => setCustomPlaylistInput(e.target.value)}
+                  className="flex-1 bg-black/60 border border-white/15 rounded-xl px-3 py-1.5 font-mono text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold font-mono text-xs shrink-0 transition-all shadow-md active:scale-95 flex items-center space-x-1"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Load</span>
+                </button>
+              </div>
+            </form>
+
             {/* Search Input & Genre Pills */}
             <div className="space-y-2.5">
               <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="Search 500+ songs, artists, rain tracks..."
+                  placeholder="Search tracks, artists, rain songs in playlist..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2 font-mono text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#22C7F2]/50"
@@ -620,8 +891,8 @@ export default function App() {
               <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 text-[11px] font-mono scrollbar-none">
                 {['All', 'Rain', '90s', 'Bollywood', 'Romantic', 'Classic', 'Lo-Fi'].map((tag) => {
                   const count = tag === 'All' 
-                    ? DEFAULT_TRACKS.length 
-                    : DEFAULT_TRACKS.filter((t) => t.genre.toLowerCase().includes(tag.toLowerCase())).length;
+                    ? playlistTracks.length 
+                    : playlistTracks.filter((t) => t.genre.toLowerCase().includes(tag.toLowerCase())).length;
 
                   return (
                     <button
@@ -629,12 +900,8 @@ export default function App() {
                       onClick={() => setSelectedGenre(tag)}
                       className={`px-3 py-1 rounded-full border transition-all shrink-0 flex items-center space-x-1 ${
                         selectedGenre === tag
-                          ? tag === 'Rain'
-                            ? 'bg-[#22C7F2] text-[#07131F] border-[#22C7F2] font-bold shadow-md'
-                            : 'bg-[#22C7F2] text-[#07131F] border-[#22C7F2] font-bold shadow-sm'
-                          : tag === 'Rain'
-                            ? 'bg-[#22C7F2]/10 border-[#22C7F2]/30 text-[#22C7F2] hover:bg-[#22C7F2]/20'
-                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                          ? 'bg-[#22C7F2] text-[#07131F] border-[#22C7F2] font-bold shadow-sm'
+                          : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                       }`}
                     >
                       <span>{tag === 'Rain' ? '🌧️ Rain' : tag}</span>
@@ -646,26 +913,21 @@ export default function App() {
             </div>
 
             {/* Track List */}
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {filteredTracks.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 font-mono text-xs space-y-1">
-                  <p>No matching tracks found.</p>
-                  <p className="text-[10px] text-slate-500">Try searching for "Pehla Nasha", "Kumar Sanu", or "Rain".</p>
+                  <p>No matching tracks found in playlist.</p>
+                  <p className="text-[10px] text-slate-500">Try searching for other song titles or artists.</p>
                 </div>
               ) : (
-                filteredTracks.map((track) => {
-                  const originalIdx = DEFAULT_TRACKS.findIndex((t) => t.id === track.id);
+                filteredTracks.map((track, idx) => {
+                  const originalIdx = playlistTracks.findIndex((t) => t.id === track.id);
                   const isCurrent = currentTrackIdx === originalIdx;
 
                   return (
                     <div
                       key={track.id}
-                      onClick={() => {
-                        setCurrentTrackIdx(originalIdx);
-                        setCurrentTime(0);
-                        setIsPlaying(true);
-                        setShowPlaylistModal(false);
-                      }}
+                      onClick={() => handleSelectTrack(originalIdx)}
                       className={`p-3 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
                         isCurrent
                           ? 'bg-[#22C7F2]/15 border-[#22C7F2]/50 text-[#22C7F2] shadow-lg'
@@ -682,9 +944,11 @@ export default function App() {
                       </div>
 
                       <div className="flex items-center space-x-2 shrink-0">
-                        <span className="px-2 py-0.5 rounded-full bg-white/5 text-[10px] font-mono text-slate-400 border border-white/5 hidden sm:inline-block">
-                          {track.genre}
-                        </span>
+                        {isCurrent && (
+                          <span className="px-2 py-0.5 rounded-full bg-cyan-400 text-black font-mono text-[10px] font-bold">
+                            Playing
+                          </span>
+                        )}
                         <span className="font-mono text-xs text-slate-400">{track.duration}</span>
                       </div>
                     </div>
@@ -695,14 +959,14 @@ export default function App() {
 
             {/* Footer with Playlist Link */}
             <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-400">
-              <span className="text-[11px]">Direct Stream: <span className="text-[#FFD18A]">24/7 Lo-Fi CDN Audio</span></span>
+              <span className="text-[11px]">Stream: <span className="text-[#FFD18A]">YouTube API + Lo-Fi</span></span>
               <a
-                href="https://youtube.com/playlist?list=PLrQCktvMYPpDin_kQUIm61mmGJI6ZHPAK&si=UiTDeH6CXLEmtyKy"
+                href={`https://youtube.com/playlist?list=${playlistId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-1.5 rounded-xl bg-[#22C7F2]/10 border border-[#22C7F2]/30 text-[#22C7F2] hover:bg-[#22C7F2] hover:text-[#07131F] font-bold transition-all flex items-center gap-1.5 text-xs"
+                className="px-3 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500 hover:text-white font-bold transition-all flex items-center gap-1.5 text-xs"
               >
-                <span>Open YouTube Tracklist</span>
+                <span>Open in YouTube</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -737,8 +1001,7 @@ export default function App() {
                 <ul className="space-y-1 text-slate-400">
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">Space</kbd> Play / Pause Stream</li>
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">← / →</kbd> Previous / Next Track</li>
-                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">P</kbd> Coding Playlist</li>
-                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">S</kbd> Coding Sounds & SFX Deck</li>
+                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">P / Q</kbd> Coding Playlist Queue</li>
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">Z</kbd> Zen Focus Mode</li>
                 </ul>
               </div>
