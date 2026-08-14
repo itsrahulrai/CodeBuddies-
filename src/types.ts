@@ -10,7 +10,7 @@ export interface Track {
 }
 
 export interface SoundChannel {
-  id: 'rain' | 'keyboard' | 'cafe' | 'vinyl' | 'waves';
+  id: 'rain' | 'keyboard' | 'city' | 'cafe' | 'vinyl' | 'waves';
   name: string;
   icon: string;
   volume: number;

@@ -230,8 +230,9 @@ export const DEFAULT_TRACKS: Track[] = [...FEATURED_TRACKS, ...GENERATED_TRACKS]
 
 
 export const INITIAL_SOUND_CHANNELS: SoundChannel[] = [
-  { id: 'rain', name: 'Window Rain', icon: 'CloudRain', volume: 60, active: false, color: '#00f0ff' },
-  { id: 'keyboard', name: 'Mechanical Keys', icon: 'Keyboard', volume: 50, active: true, color: '#ffb703' },
+  { id: 'rain', name: 'Window Rain', icon: 'CloudRain', volume: 65, active: true, color: '#00f0ff' },
+  { id: 'keyboard', name: 'Mechanical Keys', icon: 'Keyboard', volume: 50, active: false, color: '#ffb703' },
+  { id: 'city', name: 'City Night Noise', icon: 'Building2', volume: 45, active: false, color: '#38bdf8' },
   { id: 'cafe', name: 'Midnight Cafe', icon: 'Coffee', volume: 40, active: false, color: '#fb8500' },
   { id: 'vinyl', name: 'Vinyl Crackle', icon: 'Disc', volume: 30, active: false, color: '#ff2a85' },
   { id: 'waves', name: 'Binaural Focus', icon: 'Waves', volume: 45, active: false, color: '#8b5cf6' }

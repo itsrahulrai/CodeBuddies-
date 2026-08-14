@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Clock, Sunrise, Sun, Sunset, Moon, Sparkles, Check, RefreshCw, User } from 'lucide-react';
+import { X, Clock, Sunrise, Sun, Sunset, Moon, Sparkles, Check, RefreshCw, User, CloudRain, Zap, Compass, Coffee } from 'lucide-react';
 import { TimeOfDayPeriod, TIME_OF_DAY_CONFIGS } from '../data/timeOfDayConfig';
 
 interface TimeOfDayModalProps {
@@ -51,12 +51,36 @@ export const TimeOfDayModal: React.FC<TimeOfDayModalProps> = ({
       label: 'Late Night Lo-Fi',
       hours: '09:00 PM – 04:59 AM',
       icon: <Moon className="w-5 h-5 text-[#22C7F2]" />
+    },
+    {
+      id: 'rainy_storm',
+      label: 'Thunder Rain',
+      hours: 'Heavy Rainfall & Fog',
+      icon: <CloudRain className="w-5 h-5 text-[#38BDF8]" />
+    },
+    {
+      id: 'tokyo_cyber',
+      label: 'Cyberpunk Neon',
+      hours: 'Tokyo Synth & Neon Lights',
+      icon: <Zap className="w-5 h-5 text-[#F472B6]" />
+    },
+    {
+      id: 'starry_galaxy',
+      label: 'Starry Aurora',
+      hours: 'Cosmic Nebula & Deep Space',
+      icon: <Compass className="w-5 h-5 text-[#C084FC]" />
+    },
+    {
+      id: 'cozy_cafe',
+      label: 'Cozy Cafe',
+      hours: 'Warm Amber & Rain on Glass',
+      icon: <Coffee className="w-5 h-5 text-[#FB923C]" />
     }
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-lg bg-[#07131F]/95 border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-6 text-[#F5F7FA] font-sans overflow-hidden">
+      <div className="relative w-full max-w-xl max-h-[90vh] bg-[#07131F]/95 border border-white/15 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 text-[#F5F7FA] font-sans overflow-y-auto">
         
         {/* Background Ambient Glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#22C7F2]/10 rounded-full blur-3xl pointer-events-none"></div>
