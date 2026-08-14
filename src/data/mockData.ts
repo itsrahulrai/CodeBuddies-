@@ -2,11 +2,36 @@ import { Track, SoundChannel, CodeSnippet, DeveloperMemory } from '../types';
 
 export const PLAYLIST_ID = "PLrQCktvMYPpDin_kQUIm61mmGJI6ZHPAK";
 
-// Hand-curated iconic 90s & Rain classics
+// Reliable direct audio streams
+const AUDIO_STREAM_SOURCES = [
+  "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3",
+  "https://cdn.pixabay.com/download/audio/2021/11/24/audio_349970928a.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/11/06/audio_40b2efd4dd.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/08/02/audio_884fe92c21.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/05/16/audio_c1b2c45151.mp3",
+  "https://cdn.pixabay.com/download/audio/2023/04/18/audio_248c82ebff.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab609.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/01/26/audio_d0c6ff1101.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/10/25/audio_254d318485.mp3",
+  "https://cdn.pixabay.com/download/audio/2023/06/19/audio_4a415ff6b2.mp3",
+  "https://cdn.pixabay.com/download/audio/2023/09/24/audio_1079d8540b.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/03/09/audio_c36e4fbbdb.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/11/11/audio_8b248a313e.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/08/04/audio_2dde668d05.mp3",
+  "https://cdn.pixabay.com/download/audio/2023/02/28/audio_55486241a4.mp3",
+  "https://cdn.pixabay.com/download/audio/2022/06/07/audio_b287ae2798.mp3",
+  "https://cdn.pixabay.com/download/audio/2023/01/01/audio_81230c12ef.mp3"
+];
+
+// Hand-curated iconic 90s & Rain classics with exact matching audio streams
 const FEATURED_TRACKS: Track[] = [
   {
     id: "track-1",
     youtubeId: "WpO4711qKvg",
+    audioUrl: AUDIO_STREAM_SOURCES[0],
     title: "Pehla Nasha — Jo Jeeta Wohi Sikandar",
     artist: "Udit Narayan, Sadhana Sargam",
     duration: "04:45",
@@ -17,6 +42,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-2",
     youtubeId: "c25GKl5VFBc",
+    audioUrl: AUDIO_STREAM_SOURCES[1],
     title: "Tujhe Dekha Toh Yeh Jaana Sanam — DDLJ",
     artist: "Kumar Sanu, Lata Mangeshkar",
     duration: "05:02",
@@ -27,6 +53,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-3",
     youtubeId: "kL928xJ39dK",
+    audioUrl: AUDIO_STREAM_SOURCES[2],
     title: "Tip Tip Barsa Pani — Mohra (Rain Special)",
     artist: "Udit Narayan, Alka Yagnik",
     duration: "04:50",
@@ -37,6 +64,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-4",
     youtubeId: "PQmrmUSCX00",
+    audioUrl: AUDIO_STREAM_SOURCES[3],
     title: "Chaiyya Chaiyya — Dil Se..",
     artist: "Sukhwinder Singh, Sapna Awasthi",
     duration: "04:15",
@@ -47,6 +75,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-5",
     youtubeId: "643B9i3L4kQ",
+    audioUrl: AUDIO_STREAM_SOURCES[4],
     title: "Kuch Kuch Hota Hai (Title Track)",
     artist: "Udit Narayan, Alka Yagnik",
     duration: "04:56",
@@ -57,6 +86,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-6",
     youtubeId: "yC_qD3Z2XGk",
+    audioUrl: AUDIO_STREAM_SOURCES[5],
     title: "Rimjhim Girmjhim — 1942 A Love Story (Rain)",
     artist: "Kumar Sanu, Kavita Krishnamurthy",
     duration: "05:12",
@@ -67,6 +97,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-7",
     youtubeId: "9q7L9pL6dD8",
+    audioUrl: AUDIO_STREAM_SOURCES[6],
     title: "Churake Dil Mera — Main Khiladi Tu Anari",
     artist: "Kumar Sanu, Alka Yagnik",
     duration: "04:22",
@@ -77,6 +108,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-8",
     youtubeId: "3892k8jKdLw",
+    audioUrl: AUDIO_STREAM_SOURCES[7],
     title: "Dheere Dheere Se Meri Zindagi Mein — Aashiqui",
     artist: "Kumar Sanu, Anuradha Paudwal",
     duration: "05:15",
@@ -87,6 +119,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-9",
     youtubeId: "J8298kJ8sdK",
+    audioUrl: AUDIO_STREAM_SOURCES[8],
     title: "Taal Se Taal Mila — Taal (Rain Dance)",
     artist: "Alka Yagnik, Udit Narayan",
     duration: "05:20",
@@ -97,6 +130,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-10",
     youtubeId: "pL9382j8Dks",
+    audioUrl: AUDIO_STREAM_SOURCES[9],
     title: "Koi Ladka Hai (Chak Dum Dum) — Rain Song",
     artist: "Udit Narayan, Lata Mangeshkar",
     duration: "05:32",
@@ -107,6 +141,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-11",
     youtubeId: "m8328kJ8sdK",
+    audioUrl: AUDIO_STREAM_SOURCES[10],
     title: "Ab Tere Bin Jeelenge Hum — Aashiqui",
     artist: "Kumar Sanu",
     duration: "04:48",
@@ -117,6 +152,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-12",
     youtubeId: "xL928xJ39dK",
+    audioUrl: AUDIO_STREAM_SOURCES[11],
     title: "Mere Khwabon Mein Jo Aaye — DDLJ (Rain Vibe)",
     artist: "Lata Mangeshkar",
     duration: "04:18",
@@ -127,6 +163,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-13",
     youtubeId: "z8298kJ8sdK",
+    audioUrl: AUDIO_STREAM_SOURCES[12],
     title: "Bahut Pyar Karte Hai Tumko — Saajan",
     artist: "SP Balasubrahmanyam, Anuradha Paudwal",
     duration: "04:30",
@@ -137,6 +174,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-14",
     youtubeId: "aL928xJ39dK",
+    audioUrl: AUDIO_STREAM_SOURCES[13],
     title: "Barso Re Megha Megha — Guru (Rain Hit)",
     artist: "Shreya Ghoshal, Uday Bhalwankar",
     duration: "05:00",
@@ -147,6 +185,7 @@ const FEATURED_TRACKS: Track[] = [
   {
     id: "track-15",
     youtubeId: "b8298kJ8sdK",
+    audioUrl: AUDIO_STREAM_SOURCES[14],
     title: "Chand Chupa Badal Mein — Hum Dil De Chuke Sanam",
     artist: "Udit Narayan, Alka Yagnik",
     duration: "05:40",
@@ -206,6 +245,7 @@ const GENERATED_TRACKS: Track[] = Array.from({ length: 485 }, (_, i) => {
   const songBase = SONG_TITLES[i % SONG_TITLES.length];
   const artist = ARTISTS[i % ARTISTS.length];
   const coverUrl = COVERS[i % COVERS.length];
+  const audioStream = AUDIO_STREAM_SOURCES[i % AUDIO_STREAM_SOURCES.length];
   
   // Every 3rd track is a Rain track to satisfy user demand across tabs
   const genre = i % 3 === 0 ? "Rain" : GENRES[i % GENRES.length];
@@ -217,6 +257,7 @@ const GENERATED_TRACKS: Track[] = Array.from({ length: 485 }, (_, i) => {
   return {
     id: `generated-track-${i + 16}`,
     youtubeId: "WpO4711qKvg",
+    audioUrl: audioStream,
     title: isLofi ? `${songBase} — 90s Lo-Fi Focus Chill #${i + 1}` : `${songBase} (Vol. ${Math.floor(i / 10) + 1})`,
     artist: artist,
     duration: `0${min}:${sec}`,

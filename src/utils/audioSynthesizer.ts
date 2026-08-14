@@ -1,7 +1,11 @@
-// Web Audio API Synthesizer for Mechanical Keyboard SFX, City Noise & Ambient Generators
+// Web Audio API Synthesizer for Mechanical Keyboard SFX, Server Room, Coding FX & Ambient Generators
+
+export type KeyboardSwitchType = 'thock' | 'clicky' | 'creamy';
 
 class AudioSynthesizer {
   private ctx: AudioContext | null = null;
+  
+  // Ambient Sound Generators
   private rainGain: GainNode | null = null;
   private rainNode: AudioNode | null = null;
   
@@ -11,12 +15,15 @@ class AudioSynthesizer {
   private cafeGain: GainNode | null = null;
   private cafeNode: AudioNode | null = null;
 
+  private serverGain: GainNode | null = null;
+  private serverNode: AudioNode | null = null;
+
   private keyboardTimer: NodeJS.Timeout | null = null;
   private keyboardVolume = 0.5;
+  private currentSwitchType: KeyboardSwitchType = 'thock';
 
   private vinylGain: GainNode | null = null;
   private vinylNode: AudioNode | null = null;
-  private vinylInterval: number | null = null;
 
   private waveGain: GainNode | null = null;
   private waveOsc1: OscillatorNode | null = null;
@@ -32,8 +39,8 @@ class AudioSynthesizer {
     }
   }
 
-  // Synthesize crisp mechanical keyboard switch sound
-  public playKeyClick(volumeScale = 1) {
+  // Synthesize crisp mechanical keyboard switch sounds (Thock / Clicky / Creamy)
+  public playKeyClick(volumeScale = 1, switchType: KeyboardSwitchType = 'thock') {
     try {
       this.initContext();
       if (!this.ctx) return;
@@ -42,34 +49,70 @@ class AudioSynthesizer {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
-      const pitch = 1700 + Math.random() * 800;
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(pitch, now);
-      osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
+      if (switchType === 'thock') {
+        // Deep, rich, lubricated mechanical linear thock
+        const pitch = 320 + Math.random() * 80;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 0.045);
 
-      const targetGain = 0.12 * volumeScale;
-      gain.gain.setValueAtTime(targetGain, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+        const targetGain = 0.22 * volumeScale;
+        gain.gain.setValueAtTime(targetGain, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
 
-      osc.start(now);
-      osc.stop(now + 0.04);
+        osc.start(now);
+        osc.stop(now + 0.055);
+      } else if (switchType === 'clicky') {
+        // High-pitched tactile Cherry MX Blue click
+        const pitch = 1900 + Math.random() * 600;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.025);
+
+        const targetGain = 0.15 * volumeScale;
+        gain.gain.setValueAtTime(targetGain, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.035);
+      } else {
+        // Creamy subtle tactile switch
+        const pitch = 550 + Math.random() * 120;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.04);
+
+        const targetGain = 0.16 * volumeScale;
+        gain.gain.setValueAtTime(targetGain, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
     } catch {
       // Audio context error ignore
     }
   }
 
   // Mechanical Keyboard Continuous Typing Loop
-  public setKeyboardActive(active: boolean, volume = 0.5) {
+  public setKeyboardActive(active: boolean, volume = 0.5, switchType: KeyboardSwitchType = 'thock') {
     this.keyboardVolume = volume;
+    this.currentSwitchType = switchType;
     if (active) {
       if (!this.keyboardTimer) {
         const scheduleNextKey = () => {
-          this.playKeyClick(this.keyboardVolume);
-          // Random burst typing rhythm
-          const delay = Math.random() < 0.25 ? 250 + Math.random() * 500 : 80 + Math.random() * 120;
+          this.playKeyClick(this.keyboardVolume, this.currentSwitchType);
+          // Realistic coder bursts with pauses between functions
+          const delay = Math.random() < 0.2 ? 350 + Math.random() * 600 : 75 + Math.random() * 110;
           this.keyboardTimer = setTimeout(scheduleNextKey, delay);
         };
         scheduleNextKey();
@@ -82,7 +125,144 @@ class AudioSynthesizer {
     }
   }
 
-  // Synthesize City Traffic & Night Atmosphere (Deep Brown/Pink filtered noise with gentle swell)
+  // Synthesize Server Room / Datacenter Cooling Fans & Rack Hum
+  public setServerActive(active: boolean, volume = 0.4) {
+    this.initContext();
+    if (!this.ctx) return;
+
+    if (active) {
+      if (!this.serverNode) {
+        const bufferSize = 2 * this.ctx.sampleRate;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = (Math.random() * 2 - 1) * 0.07;
+        }
+
+        const fanNoise = this.ctx.createBufferSource();
+        fanNoise.buffer = noiseBuffer;
+        fanNoise.loop = true;
+
+        // Bandpass filter centered at 380Hz for server rack fan air-cooling whoosh
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 380;
+        filter.Q.value = 0.8;
+
+        // Sub-bass 60Hz server transformer hum
+        const humOsc = this.ctx.createOscillator();
+        humOsc.type = 'sine';
+        humOsc.frequency.value = 60;
+
+        const humGain = this.ctx.createGain();
+        humGain.gain.value = 0.15;
+
+        this.serverGain = this.ctx.createGain();
+        this.serverGain.gain.value = volume * 0.4;
+
+        fanNoise.connect(filter);
+        filter.connect(this.serverGain);
+        humOsc.connect(humGain);
+        humGain.connect(this.serverGain);
+        this.serverGain.connect(this.ctx.destination);
+
+        fanNoise.start();
+        humOsc.start();
+        this.serverNode = fanNoise;
+      } else if (this.serverGain) {
+        this.serverGain.gain.setValueAtTime(volume * 0.4, this.ctx.currentTime);
+      }
+    } else {
+      if (this.serverNode) {
+        try {
+          (this.serverNode as AudioBufferSourceNode).stop();
+        } catch { /* ignore */ }
+        this.serverNode = null;
+        this.serverGain = null;
+      }
+    }
+  }
+
+  // Build Success Major Triad Chime (C5 -> E5 -> G5 -> C6)
+  public playBuildSuccess() {
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        const startTime = now + idx * 0.08;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+
+        gain.gain.setValueAtTime(0.12, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+
+        osc.start(startTime);
+        osc.stop(startTime + 0.38);
+      });
+    } catch { /* ignore */ }
+  }
+
+  // Git Push Synced Confirmation (Swoosh + Chord)
+  public playGitPush() {
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch { /* ignore */ }
+  }
+
+  // Terminal Bell Beep (ANSI / Retro 880Hz Pip)
+  public playTerminalBell() {
+    this.initContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.14);
+    } catch { /* ignore */ }
+  }
+
+  // Synthesize City Traffic & Night Atmosphere
   public setCityActive(active: boolean, volume = 0.5) {
     this.initContext();
     if (!this.ctx) return;
@@ -105,7 +285,6 @@ class AudioSynthesizer {
         brownNoise.buffer = noiseBuffer;
         brownNoise.loop = true;
 
-        // Bandpass/Lowpass filter for deep city hum and distant traffic
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 220;
@@ -133,7 +312,7 @@ class AudioSynthesizer {
     }
   }
 
-  // Toggle Ambient Rain Generator (Pink noise filter)
+  // Toggle Ambient Rain Generator
   public setRainActive(active: boolean, volume = 0.5) {
     this.initContext();
     if (!this.ctx) return;
@@ -248,7 +427,6 @@ class AudioSynthesizer {
         const output = noiseBuffer.getChannelData(0);
 
         for (let i = 0; i < bufferSize; i++) {
-          // Sparse high spikes to imitate dust crackles on vinyl
           output[i] = Math.random() < 0.003 ? (Math.random() * 2 - 1) * 0.6 : 0;
         }
 
@@ -352,3 +530,4 @@ class AudioSynthesizer {
 }
 
 export const audioSynth = new AudioSynthesizer();
+
