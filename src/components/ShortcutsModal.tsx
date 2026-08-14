@@ -11,12 +11,10 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   const shortcuts = [
     { key: 'Spacebar', desc: 'Play / Pause Music Stream' },
-    { key: 'L', desc: 'Toggle Desk Lamp Glow Light' },
-    { key: 'T', desc: 'Pomodoro Focus Timer' },
-    { key: 'S', desc: 'Ambient Sound Mixer' },
-    { key: 'I', desc: 'Live IDE Terminal' },
-    { key: 'Z', desc: 'Zen Focus Mode' },
     { key: '← / →', desc: 'Previous / Next Track' },
+    { key: 'P / Q', desc: 'Open Playlist Queue' },
+    { key: 'K', desc: 'Funny Thock Keystroke SFX' },
+    { key: 'A', desc: 'About Code Buddy' },
     { key: 'M', desc: 'Mute / Unmute Audio' }
   ];
 

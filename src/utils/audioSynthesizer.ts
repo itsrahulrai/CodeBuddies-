@@ -103,6 +103,218 @@ class AudioSynthesizer {
     }
   }
 
+  // Funny & Playful Thock Keystrokes (Cartoon Boing, Rubber Duck Quack, Pop, Pew Pew, Slide Whistle, etc.)
+  public playFunnyKeystroke(volumeScale = 1): { name: string; emoji: string } {
+    try {
+      this.initContext();
+      if (!this.ctx) return { name: 'Thock', emoji: '⌨️' };
+
+      const now = this.ctx.currentTime;
+      const funnySoundTypes = ['boing', 'rubber_duck', 'bubble_pop', 'laser_pew', 'slide_whistle', 'mega_thock', 'arcade_coin', 'wobble_spring'];
+      const chosen = funnySoundTypes[Math.floor(Math.random() * funnySoundTypes.length)];
+
+      switch (chosen) {
+        case 'boing': {
+          // Cartoon Spring Boing
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const lfo = this.ctx.createOscillator();
+          const lfoGain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.exponentialRampToValueAtTime(680, now + 0.15);
+
+          lfo.frequency.setValueAtTime(28, now);
+          lfoGain.gain.setValueAtTime(45, now);
+          lfo.connect(osc.frequency);
+
+          gain.gain.setValueAtTime(0.24 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          lfo.start(now);
+          osc.start(now);
+          lfo.stop(now + 0.3);
+          osc.stop(now + 0.3);
+          return { name: 'Cartoon Boing!', emoji: '🌀' };
+        }
+
+        case 'rubber_duck': {
+          // Hilarious Rubber Duck Squeak / Quack
+          const osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc1.type = 'sawtooth';
+          osc2.type = 'triangle';
+
+          osc1.frequency.setValueAtTime(950, now);
+          osc1.frequency.linearRampToValueAtTime(450, now + 0.09);
+          osc1.frequency.linearRampToValueAtTime(800, now + 0.15);
+
+          osc2.frequency.setValueAtTime(475, now);
+          osc2.frequency.linearRampToValueAtTime(225, now + 0.09);
+          osc2.frequency.linearRampToValueAtTime(400, now + 0.15);
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1100, now);
+          filter.Q.setValueAtTime(3.5, now);
+
+          gain.gain.setValueAtTime(0.22 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+          osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.22);
+          osc2.stop(now + 0.22);
+          return { name: 'Rubber Duck Quack!', emoji: '🦆' };
+        }
+
+        case 'bubble_pop': {
+          // Satisfying Cartoon Water Drop / Bubble Pop
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(350, now);
+          osc.frequency.exponentialRampToValueAtTime(1600, now + 0.07);
+
+          gain.gain.setValueAtTime(0.3 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.12);
+          return { name: 'Bubble Pop!', emoji: '🫧' };
+        }
+
+        case 'laser_pew': {
+          // Retro 8-bit Arcade Sci-Fi Laser Pew
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(1800, now);
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.14);
+
+          gain.gain.setValueAtTime(0.2 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.18);
+          return { name: 'Pew Pew Laser!', emoji: '🔫' };
+        }
+
+        case 'slide_whistle': {
+          // Comical Slide Whistle Glissando
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1200, now);
+          osc.frequency.exponentialRampToValueAtTime(350, now + 0.2);
+
+          gain.gain.setValueAtTime(0.22 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.26);
+          return { name: 'Slide Whistle!', emoji: '🪈' };
+        }
+
+        case 'arcade_coin': {
+          // Super Mario / Retro Coin 2-Tone Chirp (B5 -> E6)
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(987.77, now); // B5
+          osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6
+
+          gain.gain.setValueAtTime(0.22 * volumeScale, now);
+          gain.gain.setValueAtTime(0.22 * volumeScale, now + 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.32);
+          return { name: 'Arcade Coin!', emoji: '🪙' };
+        }
+
+        case 'wobble_spring': {
+          // Funny Springy Vibrato Wobble
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.linearRampToValueAtTime(220, now + 0.05);
+          osc.frequency.linearRampToValueAtTime(550, now + 0.1);
+          osc.frequency.linearRampToValueAtTime(180, now + 0.18);
+
+          gain.gain.setValueAtTime(0.25 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.24);
+          return { name: 'Springy Boing!', emoji: '⚡' };
+        }
+
+        default: {
+          // Mega Juicy Ultra-Thock with Rich Woody Resonance
+          const osc = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(45, now + 0.06);
+
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(180, now);
+          osc2.frequency.exponentialRampToValueAtTime(30, now + 0.08);
+
+          gain.gain.setValueAtTime(0.32 * volumeScale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+          osc.connect(gain);
+          osc2.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc2.start(now);
+          osc.stop(now + 0.1);
+          osc2.stop(now + 0.1);
+          return { name: 'Mega Thock!', emoji: '💥' };
+        }
+      }
+    } catch {
+      return { name: 'Thock', emoji: '⌨️' };
+    }
+  }
+
   // Mechanical Keyboard Continuous Typing Loop
   public setKeyboardActive(active: boolean, volume = 0.5, switchType: KeyboardSwitchType = 'thock') {
     this.keyboardVolume = volume;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Info, X, ExternalLink, Eye, Search, Clock, Sparkles, Music2, Youtube, RefreshCw, Check } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Info, X, ExternalLink, Search, Clock, Sparkles, Music2, Youtube, RefreshCw, Check } from 'lucide-react';
 import { InteractiveCanvas } from './components/InteractiveCanvas';
 import { TimeOfDayModal } from './components/TimeOfDayModal';
 import { DEFAULT_TRACKS, PLAYLIST_ID as DEFAULT_PLAYLIST_ID } from './data/mockData';
@@ -55,12 +55,14 @@ export default function App() {
   // Modals & Feature States
   const [showPlaylistModal, setShowPlaylistModal] = useState<boolean>(false);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
-  const [zenMode, setZenMode] = useState<boolean>(false);
 
   // Playlist Filter State
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   
+  // Funny Keystroke Sound Feedback State
+  const [funnySoundFeedback, setFunnySoundFeedback] = useState<{ name: string; emoji: string; id: number } | null>(null);
+
   // Mouse Parallax coordinates
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -440,6 +442,12 @@ export default function App() {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  // Play Funny Thock Keystroke Sound
+  const handlePlayFunnyThock = () => {
+    const result = audioSynth.playFunnyKeystroke(1.3);
+    setFunnySoundFeedback({ ...result, id: Date.now() });
+  };
+
   // Handle Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -453,14 +461,12 @@ export default function App() {
         setShowPlaylistModal((prev) => !prev);
       } else if (e.code === 'KeyA') {
         setShowAboutModal((prev) => !prev);
-      } else if (e.code === 'KeyZ') {
-        setZenMode((prev) => !prev);
       } else if (e.code === 'KeyN' || e.code === 'ArrowRight') {
         handleNextTrack();
       } else if (e.code === 'KeyP' && e.altKey || e.code === 'ArrowLeft') {
         handlePrevTrack();
       } else if (e.code === 'KeyK' || e.code === 'KeyH') {
-        audioSynth.playKeyClick(1.2, 'thock');
+        handlePlayFunnyThock();
       }
     };
 
@@ -495,22 +501,33 @@ export default function App() {
         onEnded={handleNextTrack}
       />
 
-      {/* 1. HERO ARTWORK BACKGROUND (85% Focus) WITH 3D PARALLAX */}
+      {/* 1. HERO ARTWORK BACKGROUND (Responsive Mobile & Desktop Viewport) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
         
         {/* Sky & Background Parallax Layer */}
         <div
-          className="absolute inset-0 w-full h-full transition-transform duration-500 ease-out scale-105"
+          className="absolute inset-0 w-full h-full transition-transform duration-500 ease-out scale-100 sm:scale-105"
           style={{
             transform: `translate3d(${mousePos.x * -10}px, ${mousePos.y * -8}px, 0)`
           }}
         >
+          {/* Mobile Viewport Artwork (Dedicated 9:16 Portrait Composition) */}
           <img
-            src={characterGender === 'girl' ? currentConfig.bgImageGirl : currentConfig.bgImageBoy}
-            alt={`Developer Workspace - ${currentConfig.name} (${characterGender})`}
+            src={characterGender === 'girl' ? currentConfig.bgImageGirlMobile : currentConfig.bgImageBoyMobile}
+            alt={`Developer Workspace - ${currentConfig.name} (${characterGender}) Mobile`}
             loading="eager"
             decoding="async"
-            className="w-full h-full min-w-full min-h-full object-cover object-[50%_35%] block transition-all duration-700 ease-out"
+            className="block sm:hidden w-full h-full min-w-full min-h-full object-cover object-center transition-all duration-700 ease-out select-none pointer-events-none"
+            referrerPolicy="no-referrer"
+          />
+
+          {/* Desktop Viewport Artwork (Expansive 16:9 Landscape Composition) */}
+          <img
+            src={characterGender === 'girl' ? currentConfig.bgImageGirl : currentConfig.bgImageBoy}
+            alt={`Developer Workspace - ${currentConfig.name} (${characterGender}) Desktop`}
+            loading="eager"
+            decoding="async"
+            className="hidden sm:block w-full h-full min-w-full min-h-full object-cover object-[50%_35%] transition-all duration-700 ease-out select-none pointer-events-none"
             referrerPolicy="no-referrer"
           />
         </div>
@@ -523,12 +540,12 @@ export default function App() {
           }}
         >
           {/* Dynamic Sunlight / Sky Ray Shimmer based on Time of Day */}
-          <div className={`absolute top-0 right-4 sm:right-10 w-[320px] sm:w-[550px] h-[320px] sm:h-[550px] ${currentConfig.sunlightGlow} rounded-full blur-3xl animate-sunlight pointer-events-none transition-all duration-1000`}></div>
+          <div className={`absolute top-0 right-4 sm:right-10 w-[260px] sm:w-[550px] h-[260px] sm:h-[550px] ${currentConfig.sunlightGlow} rounded-full blur-3xl animate-sunlight pointer-events-none transition-all duration-1000`}></div>
         </div>
 
         {/* Dynamic Atmospheric & Vignette Gradient Overlays based on Time-of-Day */}
-        <div className={`absolute inset-0 bg-gradient-to-t ${currentConfig.gradientOverlay} transition-all duration-1000 pointer-events-none opacity-80 sm:opacity-100`}></div>
-        <div className={`absolute inset-0 bg-gradient-to-b ${currentConfig.vignetteGradient} transition-all duration-1000 pointer-events-none opacity-80 sm:opacity-100`}></div>
+        <div className={`absolute inset-0 bg-gradient-to-t ${currentConfig.gradientOverlay} transition-all duration-1000 pointer-events-none opacity-75 sm:opacity-90`}></div>
+        <div className={`absolute inset-0 bg-gradient-to-b ${currentConfig.vignetteGradient} transition-all duration-1000 pointer-events-none opacity-75 sm:opacity-90`}></div>
       </div>
 
       {/* Floating Dust Particles & Rain Streaks in Sunlight Overlay */}
@@ -538,58 +555,47 @@ export default function App() {
         dustColor={currentConfig.dustColor}
       />
 
-      {/* Zen Mode Exit Button */}
-      {zenMode && (
-        <button
-          onClick={() => setZenMode(false)}
-          className="fixed top-5 right-5 z-50 px-4 py-2 rounded-full bg-black/80 border border-white/20 text-white font-mono text-xs flex items-center space-x-2 backdrop-blur-md shadow-2xl hover:bg-white hover:text-black transition-all font-bold"
-        >
-          <Eye className="w-4 h-4" />
-          <span>Exit Zen Mode</span>
-        </button>
-      )}
-
-      {/* 2. MINIMALIST TOP BAR (MATCHING SCREENSHOT LAYOUT) */}
-      <header className={`fixed top-3 sm:top-5 left-3 sm:left-8 right-3 sm:right-8 z-30 pointer-events-auto flex items-center justify-between transition-opacity duration-500 ${zenMode ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      {/* 2. MINIMALIST TOP BAR */}
+      <header className="fixed top-1.5 sm:top-3.5 left-2 sm:left-6 right-2 sm:right-6 z-30 pointer-events-auto flex items-center justify-between transition-opacity duration-500">
         
         {/* Left: Brand Icon + Title + Route Subtitle */}
-        <div className="flex items-center space-x-2.5 sm:space-x-3.5">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-400/90 text-black flex items-center justify-center font-black text-base shadow-lg shrink-0">
+        <div className="flex items-center space-x-2 sm:space-x-3.5">
+          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-amber-400/90 text-black flex items-center justify-center font-black text-sm sm:text-base shadow-lg shrink-0">
             <span>💻</span>
           </div>
           <div>
-            <h1 id="app-title" className="text-sm sm:text-base font-extrabold tracking-tight leading-none text-white drop-shadow-md">
+            <h1 id="app-title" className="text-xs sm:text-base font-extrabold tracking-tight leading-none text-white drop-shadow-md">
               CODE BUDDY
             </h1>
-            <p className="font-mono text-[8px] sm:text-[9.5px] text-slate-300 tracking-[0.14em] uppercase font-semibold mt-0.5 opacity-85">
+            <p className="font-mono text-[7.5px] sm:text-[9.5px] text-slate-300 tracking-[0.12em] sm:tracking-[0.14em] uppercase font-semibold mt-0.5 opacity-85">
               DEV SANCTUARY • LOCALHOST:3000
             </p>
           </div>
         </div>
 
         {/* Right: Digital Clock + Live Status + Clean Capsule Actions */}
-        <div className="flex items-center space-x-3 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           
           {/* Clock & Status */}
           <div className="text-right font-mono hidden xs:block">
-            <div className="text-sm sm:text-base font-bold text-white tracking-wide leading-none flex items-baseline justify-end space-x-1">
+            <div className="text-xs sm:text-base font-bold text-white tracking-wide leading-none flex items-baseline justify-end space-x-1">
               <span>{formattedClock ? formattedClock.slice(0, 5) : '16:51'}</span>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 font-normal">
+              <span className="text-[8.5px] sm:text-[10px] text-slate-400 font-normal">
                 {formattedClock ? formattedClock.slice(6, 8) : '00'}
               </span>
             </div>
-            <div className="flex items-center justify-end space-x-1.5 text-[9px] sm:text-[10px] text-amber-300/90 mt-0.5">
+            <div className="flex items-center justify-end space-x-1.5 text-[8.5px] sm:text-[10px] text-amber-300/90 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
               <span className="font-semibold uppercase tracking-wider">{playlistTracks.length} TRACKS</span>
             </div>
           </div>
 
-          {/* Action Tray: Who's coding? + Atmosphere + Sounds + Zen */}
+          {/* Action Tray: Who's coding? + Atmosphere + About */}
           <div className="flex items-center space-x-1.5 sm:space-x-2">
             {/* Who's coding? Avatar Toggle */}
             <button
               onClick={() => setCharacterGender((prev) => (prev === 'boy' ? 'girl' : 'boy'))}
-              className="px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 hover:border-white/30 text-slate-200 hover:text-white transition-all text-xs font-mono flex items-center space-x-1.5 shadow-sm active:scale-95"
+              className="px-2.5 sm:px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 hover:border-white/30 text-slate-200 hover:text-white transition-all text-[11px] sm:text-xs font-mono flex items-center space-x-1 sm:space-x-1.5 shadow-sm active:scale-95"
               title="Toggle Developer Avatar (Boy / Girl)"
             >
               <span>{characterGender === 'boy' ? '👨‍💻' : '👩‍💻'}</span>
@@ -599,62 +605,72 @@ export default function App() {
             {/* Atmosphere Modal Trigger */}
             <button
               onClick={() => setShowTimeOfDayModal(true)}
-              className="px-2.5 sm:px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 hover:border-white/30 text-slate-200 hover:text-white transition-all text-xs font-mono flex items-center space-x-1 shadow-sm active:scale-95"
+              className="px-2 sm:px-3 py-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 hover:border-white/30 text-slate-200 hover:text-white transition-all text-[11px] sm:text-xs font-mono flex items-center space-x-1 shadow-sm active:scale-95"
               title="Change Time of Day & Atmosphere"
             >
               <Clock className="w-3.5 h-3.5 text-cyan-300" />
               <span className="hidden md:inline font-sans text-[11px] font-medium">{currentConfig.name}</span>
             </button>
 
-            {/* Zen Mode */}
+            {/* About Modal */}
             <button
-              onClick={() => setZenMode(true)}
+              onClick={() => setShowAboutModal(true)}
               className="p-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/15 hover:border-white/30 text-slate-300 hover:text-white transition-all shadow-sm"
-              title="Zen Focus Mode (Z)"
+              title="About & Shortcuts (A)"
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Info className="w-3.5 h-3.5" />
             </button>
           </div>
 
         </div>
       </header>
 
-      {/* 3. CENTER HERO: ICONIC DISPLAY TYPOGRAPHY & INTERACTIVE ACTION BUTTON */}
-      <div className={`fixed inset-0 flex flex-col items-center justify-center z-20 pointer-events-none transition-all duration-700 ${zenMode ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+      {/* 3. CENTER HERO: ICONIC DISPLAY TYPOGRAPHY & INTERACTIVE ACTION BUTTON (ELEVATED TO TOP) */}
+      <div className="fixed inset-0 flex flex-col items-center justify-start pt-14 xs:pt-16 sm:pt-20 md:pt-24 z-20 pointer-events-none transition-all duration-700 px-4">
         
         {/* Track Label Eyebrow */}
         <div className="text-center space-y-1 mb-1">
-          <p className="font-mono text-[10px] sm:text-xs tracking-[0.28em] sm:tracking-[0.35em] text-slate-200 uppercase font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-90 flex items-center justify-center space-x-2">
+          <p className="font-mono text-[9px] sm:text-xs tracking-[0.22em] sm:tracking-[0.35em] text-slate-200 uppercase font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-90 flex items-center justify-center space-x-2">
             <span>{playlistTracks.length} TRACKS • NON-STOP STREAM</span>
           </p>
         </div>
 
         {/* Massive White Headline */}
-        <h2 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tight text-center select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.7)] leading-none">
+        <h2 className="text-4xl xs:text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tight text-center select-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.7)] leading-none">
           CODE BUDDY
         </h2>
 
         {/* Subtitle Tagline */}
-        <p className="font-mono text-[9.5px] sm:text-[11px] tracking-[0.22em] text-amber-200/90 uppercase font-semibold mt-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+        <p className="font-mono text-[8.5px] sm:text-[11px] tracking-[0.18em] sm:tracking-[0.22em] text-amber-200/90 uppercase font-semibold mt-1 sm:mt-1.5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
           ALL NIGHT ON LOCALHOST
         </p>
 
-        {/* Center Interactive Action Button */}
-        <div className="mt-5 pointer-events-auto">
+        {/* Center Interactive Action Button with Funny Sound Effects */}
+        <div className="mt-2.5 sm:mt-4 pointer-events-auto flex flex-col items-center">
+          {funnySoundFeedback && (
+            <div
+              key={funnySoundFeedback.id}
+              className="animate-bounce mb-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/50 backdrop-blur-md text-[11px] font-mono font-bold text-cyan-300 shadow-[0_4px_12px_rgba(6,182,212,0.4)] flex items-center space-x-1.5"
+            >
+              <span>{funnySoundFeedback.emoji}</span>
+              <span>{funnySoundFeedback.name}</span>
+            </div>
+          )}
+
           <button
-            onClick={() => audioSynth.playKeyClick(1.2, 'thock')}
-            className="px-4 py-2 rounded-2xl bg-black/60 hover:bg-black/80 backdrop-blur-xl border border-white/20 hover:border-cyan-400/60 text-slate-200 hover:text-white transition-all shadow-2xl flex items-center space-x-2.5 group active:scale-95 cursor-pointer"
-            title="Click or press 'K' for mechanical switch keystroke"
+            onClick={handlePlayFunnyThock}
+            className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-2xl bg-black/60 hover:bg-black/80 backdrop-blur-xl border border-white/20 hover:border-cyan-400/60 text-slate-200 hover:text-white transition-all shadow-2xl flex items-center space-x-2 sm:space-x-2.5 group active:scale-95 cursor-pointer"
+            title="Click or press 'K' for funny keystroke sound effects"
           >
             <div className="p-1 rounded-lg bg-white/10 group-hover:bg-cyan-400 group-hover:text-black transition-colors text-slate-300">
               <Sparkles className="w-3.5 h-3.5" />
             </div>
             <div className="text-left font-mono">
-              <div className="text-[11px] font-bold text-white tracking-wide leading-tight group-hover:text-cyan-300 transition-colors">
-                मैकेनिकल कीस्ट्रोक
+              <div className="text-[10px] sm:text-[11px] font-bold text-white tracking-wide leading-tight group-hover:text-cyan-300 transition-colors">
+                मजेदार कीस्ट्रोक
               </div>
-              <div className="text-[8.5px] text-slate-400 tracking-wider uppercase font-sans">
-                THOCK KEYSTROKE (K)
+              <div className="text-[7.5px] sm:text-[8.5px] text-slate-400 tracking-wider uppercase font-sans">
+                FUNNY THOCK (K)
               </div>
             </div>
           </button>
@@ -663,10 +679,10 @@ export default function App() {
       </div>
 
       {/* 4. FLOATING PILL PLAYER & KEYBOARD SHORTCUTS */}
-      <footer className={`fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-[94vw] sm:max-w-2xl px-2 transition-all duration-500 pointer-events-auto flex flex-col items-center space-y-2.5 ${zenMode ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+      <footer className="fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-[96vw] sm:max-w-2xl px-2 transition-all duration-500 pointer-events-auto flex flex-col items-center space-y-2">
         
         {/* Floating Capsule Player */}
-        <div className="w-full bg-[#181a1d]/85 hover:bg-[#181a1d]/95 backdrop-blur-2xl border border-white/15 hover:border-white/25 rounded-full px-3.5 sm:px-5 py-2.5 sm:py-3 shadow-[0_16px_40px_rgba(0,0,0,0.7)] transition-all flex items-center justify-between gap-3 relative">
+        <div className="w-full bg-[#181a1d]/85 hover:bg-[#181a1d]/95 backdrop-blur-2xl border border-white/15 hover:border-white/25 rounded-full px-3 sm:px-5 py-2 sm:py-3 shadow-[0_16px_40px_rgba(0,0,0,0.7)] transition-all flex items-center justify-between gap-2.5 sm:gap-3 relative">
           
           {/* Left: Spinning Vinyl Cover + Track Title + Scrubber */}
           <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -1002,7 +1018,7 @@ export default function App() {
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">Space</kbd> Play / Pause Stream</li>
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">← / →</kbd> Previous / Next Track</li>
                   <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">P / Q</kbd> Coding Playlist Queue</li>
-                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">Z</kbd> Zen Focus Mode</li>
+                  <li><kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white">K</kbd> Funny Thock Keystroke SFX</li>
                 </ul>
               </div>
             </div>

@@ -15,6 +15,14 @@ import girlStarry from '../assets/images/girl_starry_galaxy_1786694438602.jpg';
 import boyCafe from '../assets/images/boy_cozy_cafe_1786694493163.jpg';
 import girlCafe from '../assets/images/girl_cozy_cafe_1786694477397.jpg';
 
+// Dedicated 9:16 Portrait Artwork for Mobile Viewports
+import boyMobileNight from '../assets/images/mobile_boy_night_1786708270363.jpg';
+import girlMobileNight from '../assets/images/mobile_girl_night_1786708293282.jpg';
+import boyMobileDay from '../assets/images/mobile_boy_day_1786708310742.jpg';
+import girlMobileDay from '../assets/images/mobile_girl_day_1786708329429.jpg';
+import boyMobileRain from '../assets/images/mobile_boy_rain_1786708347186.jpg';
+import girlMobileRain from '../assets/images/mobile_girl_rain_1786708368745.jpg';
+
 export type TimeOfDayPeriod = 'morning' | 'afternoon' | 'sunset' | 'night' | 'rainy_storm' | 'tokyo_cyber' | 'starry_galaxy' | 'cozy_cafe';
 
 export interface TimeOfDayConfig {
@@ -24,6 +32,8 @@ export interface TimeOfDayConfig {
   hoursRange: string;
   bgImageBoy: string;
   bgImageGirl: string;
+  bgImageBoyMobile: string;
+  bgImageGirlMobile: string;
   gradientOverlay: string;
   vignetteGradient: string;
   sunlightGlow: string;
@@ -44,6 +54,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: '05:00 AM - 11:59 AM',
     bgImageBoy: boyMorning,
     bgImageGirl: girlMorning,
+    bgImageBoyMobile: boyMobileDay,
+    bgImageGirlMobile: girlMobileDay,
     gradientOverlay: 'from-[#FFB703]/15 via-transparent to-[#07131F]/60',
     vignetteGradient: 'from-[#07131F]/50 via-transparent to-[#FFB703]/10',
     sunlightGlow: 'bg-[#FFD166]/25',
@@ -62,6 +74,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: '12:00 PM - 04:59 PM',
     bgImageBoy: boyAfternoon,
     bgImageGirl: girlAfternoon,
+    bgImageBoyMobile: boyMobileDay,
+    bgImageGirlMobile: girlMobileDay,
     gradientOverlay: 'from-[#38BDF8]/15 via-transparent to-[#07131F]/60',
     vignetteGradient: 'from-[#07131F]/50 via-transparent to-[#38BDF8]/10',
     sunlightGlow: 'bg-[#38BDF8]/25',
@@ -80,6 +94,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: '05:00 PM - 08:59 PM',
     bgImageBoy: boySunset,
     bgImageGirl: girlSunset,
+    bgImageBoyMobile: boyMobileNight,
+    bgImageGirlMobile: girlMobileNight,
     gradientOverlay: 'from-[#F43F5E]/15 via-transparent to-[#07131F]/65',
     vignetteGradient: 'from-[#07131F]/55 via-transparent to-[#F43F5E]/15',
     sunlightGlow: 'bg-[#F43F5E]/25',
@@ -98,6 +114,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: '09:00 PM - 04:59 AM',
     bgImageBoy: boyNight,
     bgImageGirl: girlNight,
+    bgImageBoyMobile: boyMobileNight,
+    bgImageGirlMobile: girlMobileNight,
     gradientOverlay: 'from-[#22C7F2]/10 via-transparent to-[#030712]/70',
     vignetteGradient: 'from-[#07131F]/60 via-transparent to-[#22C7F2]/10',
     sunlightGlow: 'bg-[#22C7F2]/20',
@@ -116,6 +134,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: 'Atmospheric Special',
     bgImageBoy: boyThunder,
     bgImageGirl: girlThunder,
+    bgImageBoyMobile: boyMobileRain,
+    bgImageGirlMobile: girlMobileRain,
     gradientOverlay: 'from-[#0284C7]/20 via-transparent to-[#020617]/75',
     vignetteGradient: 'from-[#020617]/65 via-transparent to-[#38BDF8]/15',
     sunlightGlow: 'bg-[#38BDF8]/20',
@@ -134,6 +154,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: 'Atmospheric Special',
     bgImageBoy: boyTokyo,
     bgImageGirl: girlTokyo,
+    bgImageBoyMobile: boyMobileRain,
+    bgImageGirlMobile: girlMobileRain,
     gradientOverlay: 'from-[#EC4899]/20 via-transparent to-[#090D16]/75',
     vignetteGradient: 'from-[#090D16]/65 via-transparent to-[#F43F5E]/15',
     sunlightGlow: 'bg-[#EC4899]/25',
@@ -152,6 +174,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: 'Atmospheric Special',
     bgImageBoy: boyStarry,
     bgImageGirl: girlStarry,
+    bgImageBoyMobile: boyMobileNight,
+    bgImageGirlMobile: girlMobileNight,
     gradientOverlay: 'from-[#A855F7]/20 via-transparent to-[#050814]/75',
     vignetteGradient: 'from-[#050814]/65 via-transparent to-[#C084FC]/15',
     sunlightGlow: 'bg-[#A855F7]/25',
@@ -170,6 +194,8 @@ export const TIME_OF_DAY_CONFIGS: Record<TimeOfDayPeriod, TimeOfDayConfig> = {
     hoursRange: 'Atmospheric Special',
     bgImageBoy: boyCafe,
     bgImageGirl: girlCafe,
+    bgImageBoyMobile: boyMobileDay,
+    bgImageGirlMobile: girlMobileDay,
     gradientOverlay: 'from-[#EA580C]/20 via-transparent to-[#120B06]/75',
     vignetteGradient: 'from-[#120B06]/65 via-transparent to-[#FB923C]/15',
     sunlightGlow: 'bg-[#F97316]/25',
